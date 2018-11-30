@@ -1,8 +1,12 @@
+
+
+/* For mobile phones: */
 [class*="col-"] {
     width: 100%;
 }
 
-@media only screen and (min-width: 500px) {
+/* tablet */
+@media only screen and (min-width: 600px) {
     body {
         /* background-color: white; */
     }
@@ -24,12 +28,25 @@
     [class*="col-"] {
         float: left;
         padding: 15px;
+        /* border: 1px solid red; */
     }
 
     .row::after {
         content: "";
         clear: both;
         display: table;
+    }
+
+}
+
+/*pc*/
+@media only screen and (min-width: 768px) {
+    body {
+        /* background-color: orange; */
+    }    
+
+    [class='post'] {
+
     }
 
 }

@@ -1,3 +1,7 @@
+<?= php
+
+?>
+
 <!doctype html>
 <html>
     <head>
@@ -54,3 +58,4 @@
         </footer>        
     </body>
 </html>
+
