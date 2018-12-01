@@ -3,7 +3,7 @@
 echo '<div class="user">';
 
 if ($params["user"] != null) {
-    echo $params["user"]["name"];
+    echo $params["user"]["login"];
     echo '<form action="" method="POST">';
     echo '<input type="hidden" name="log" value="logout">';
     echo '<input class="inputButton floatright" type="submit" name="submit" value="Odhlásit">';

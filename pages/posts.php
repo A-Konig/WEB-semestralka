@@ -1,6 +1,6 @@
 <?php
 
-/* asi bysme tady měli šahat do databáze a vytahovat vodtamtuď příspěvky */
+$allPosts = $params['db']->allPosts();
 
 echo '<div class="page">';
 
@@ -11,12 +11,19 @@ if ($params["user"] != null) {
 
 //pro všechny
 echo '<div class="posts">';
-echo "<div class='itemName'>Název</div>";
-echo "<div class='item'>";
-echo "Autor <br>#tagy";
-echo '</div>';
+if ($allPosts != null) {
+    foreach ($allPosts as $index) {
+        echo '<div class="listingBox">';
+            echo '<div class="posts">';
+            echo "<div class='itemName'>Název</div>";   
+            echo "<div class='item'>";
+            echo "Autor <br>#tagy";
+        echo '</div>';
+        echo '</div>';
+        echo '</div>';
+    }
+}
 echo '</div>';
 
 echo '</div>';
-echo '<br>';
 

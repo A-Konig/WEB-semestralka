@@ -4,7 +4,7 @@ echo '<div class="page">';
 
 //pro přihlášené uživatele
 if ($user != null) {
-    echo 'Jste přihlášen jako uživatel ' . $params["user"]["name"]
+    echo 'Jste přihlášen jako uživatel ' . $params["user"]["login"]
     . '<br><br>';
     echo 'Nejste to vy?'
     . '<br><br>';

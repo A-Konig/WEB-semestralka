@@ -102,6 +102,10 @@ body {
     color: white;
 }
 
+.listingBox {
+    padding-bottom: 20px;
+}
+
 .posts {
     clear: both;
     padding-top: 10px;

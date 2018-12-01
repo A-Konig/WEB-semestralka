@@ -55,6 +55,6 @@ class User {
     public function logout() {
         if ((isset($this->session))&&($this->session->exists())) {
              $this->session->endSession();
-        };
+        }
     }
 }

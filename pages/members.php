@@ -1,15 +1,22 @@
 <?php
 
-echo '<div class="page">';
+$allUsers = $params['db']->allUsers();
 
+echo '<div class="page">';
 //pro přihlášené uživatele
 if ($user != null) {
-
-    echo '<div class="itemName">Login</div>';
-    echo '<div class="item row">';
-    echo '<div class ="img"><img src="../img/empty.png" width="70px" height="90úx" ></div>';
-    echo 'Jméno<br>Role';
-    echo '</div>';
+    
+    if ($allUsers != null) {
+        foreach ($allUsers as $index) {
+            echo '<div class="listingBox">';
+                echo '<div class="itemName">'.$index['login'].'</div>';
+                echo '<div class="item row">';
+                    echo '<div class ="img"><img src="../img/empty.png" width="70px" height="90úx" ></div>';
+                    echo $index['jmeno'].'<br>'.$index['roleData']['nazev'];
+                echo '</div>';
+            echo '</div>';
+        }
+    }
     
 //pro nepřihlášené uživatele    
 } else {

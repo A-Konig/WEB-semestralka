@@ -5,7 +5,7 @@ echo '<div class="page">';
 //pro přihlášené uživatele
 if ($user != null) {
     
-    echo 'Jste přihlášen jako uživatel ' . $params["user"]["name"] 
+    echo 'Jste přihlášen jako uživatel ' . $params["user"]["login"] 
     . '<br><br>';
     echo 'Nejste to vy?'
     . '<br><br>';
@@ -18,14 +18,14 @@ if ($user != null) {
 } else {
     
     echo '<h2>Registrace:</h2>';
-    echo '<form class = "submit" action="" method="POST">';
+    echo '<form class = "submit" action="" method="POST" >';
     
-    echo '<span class="formHead">Login<span style="color:red">*</span>:</span> <input type="text" name="login"><br>';
+    echo '<span class="formHead">Login<span style="color:red">*</span>:</span> <input type="text" name="login" required><br>';
     echo '<span class="formHead">Jméno:</span> <input type="text" name="name"><br>';
-    echo '<span class="formHead">E-mail<span style="color:red">*</span>:</span> <input type="text" name="email"><br>';
-    echo '<span class="formHead">Heslo<span style="color:red">*</span>:</span> <input type="password" name="password"><br>';
+    echo '<span class="formHead">E-mail<span style="color:red">*</span>:</span> <input type="email" name="email" required><br>';
+    echo '<span class="formHead">Heslo<span style="color:red">*</span>:</span> <input type="password" name="password" required><br>';
     
-    echo '<input type="checkbox" name="agree"> <span style="color:red">*</span> I have read and understood <a href="index.php?page=terms">The terms and conditions</a><br>';
+    echo '<input type="checkbox" name="agree" required> <span style="color:red">*</span> I have read and understood <a href="index.php?page=terms">The terms and conditions</a><br>';
 
     echo '<br>';
     echo '<input type="hidden" name="log" value="register">';
@@ -33,8 +33,6 @@ if ($user != null) {
     echo '</form>';
     
     echo '<span style="color:red">*</span><span style="font-size:10px"> povinná položka</span><br>';
-
-    
 }
 
 echo '</div>';
