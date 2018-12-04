@@ -14,13 +14,21 @@ class Database {
     /*
      * Konstruktor
      */
+
     public function __construct() {
         $db_server = DB_SERVER;
         $db_name = DB_NAME;
         $db_user = DB_USER;
         $db_pass = DB_PASS;
 
-        $this->db = new PDO("mysql:host=$db_server;dbname=$db_name", $db_user, $db_pass);
+        try {
+            $this->db = new PDO("mysql:host=$db_server;dbname=$db_name", $db_user, $db_pass);
+        } catch (exception $e) {
+             echo '<div class="alert alert-warning">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>Bez připojení k databázi!</strong> Některé funkce webu nemusí být dostupné 
+                </div>';
+        }
     }
 
     /*
@@ -29,19 +37,22 @@ class Database {
      */
 
     private function execute($q) {
-        $res = $this->db->query($q);
-        if (!$res) {
-            $error = $this->db->errorInfo();
-            echo $error[2];
+        if (isset($this->db)) {
+            $res = $this->db->query($q);
+            if (!$res) {
+                $error = $this->db->errorInfo();
+                echo $error[2];
 //smazat            
-            echo 'chyba při výkonu: ' . $q;
-            return null;
+                echo 'chyba při výkonu: ' . $q;
+                return null;
+            } else {
+                $res = $res->fetchAll();
+                return $res;
+            }
         } else {
-            $res = $res->fetchAll();
-            return $res;
+            return null;
         }
     }
-
 
     /*
      * Ověří správnost přihlašovacího jména a hesla
@@ -49,6 +60,7 @@ class Database {
      * @param $heslo heslo
      * @return boolean
      */
+
     public function authorizeUser($login, $heslo) {
         $user = $this->getUser($login);
         if (($user != null) && ($user['heslo'] == $heslo)) {
@@ -62,24 +74,25 @@ class Database {
      * Metoda, která vybere všechny uživatele a jejich uživatelská práva z databáze
      * @return pole s uživateli
      */
-
     public function allUsers() {
         $q = "SELECT * FROM akonig_uzivatele";
         $res = $this->execute($q);
-        $res2 = array();
-
-        //ke zaždému uživateli zjistí jeho přístupové právo
-        $i = 0;
-        foreach ($res as $index) {
-            $index = $this->appendRight($index);
-//            $pravo = $this->getRight($index['idprava_akonig']);
-//            $index['pravo'] = $pravo;
-            $res2[$i] = $index;
-            $i++;
+        
+        if ($res != null) {
+            $users = array();
+            //ke zaždému uživateli zjistí jeho přístupové právo
+            $i = 0;
+            foreach ($res as $index) {
+                $index = $this->appendRight($index);
+                $users[$i] = $index;
+                $i++;
+            }
+            return $users;
+        } else {
+            return null;
         }
-        return $res2;
     }
-    
+
     /*
      * Metoda, která z databáze zjistí dostupné údaje o daném uživateli.
      * @params $login login uživatele
@@ -90,14 +103,11 @@ class Database {
         $users = $this->execute($q);
 
         if ($users != null) {
-            $user = $users['0'];
-            $user = $this->appendRight($user);
+            $user = $this->appendRight($users['0']);
             return $user;
         } else {
             return null;
         }
-//        $pravo = $this->getRight($user['idprava_akonig']);
-//        $user['pravo'] = $pravo;
     }
 
     /*
@@ -105,35 +115,43 @@ class Database {
      * @return boolean jestli operace proběhla nebo ne
      */
     public function createUser($jmeno, $login, $heslo, $email, $role) {
+        if (!(isset($this->db))) {
+            return false;
+        }
         if ($this->getUser($login) == null) {
             $q = "INSERT INTO akonig_uzivatele(login,jmeno,heslo,email,role)
                 VALUES ('$login','$jmeno','$heslo','$email',$role)";
             $this->execute($q);
-            return true;
         } else {
-            return false;    
+            return false;
         }
     }
 
     /*
      * Metoda, která smaže uživatele z databáze
      */
+
     public function deleteUser($login) {
+        if (!(isset($this->db))) {
+            return false;
+        }
         if ($this->getUser($login) != null) {
             $q = "DELETE FROM akonig_uzivatele WHERE login='$login';";
             $this->execute($q);
+            return true;
         }
     }
 
     /*
      * Metoda co do pole reprezentující uživatele přidá na index pravo pole obsahující informace o jeho přístupovém právu
      */
+
     private function appendRight($user) {
         $pravo = $this->getRight($user['role']);
         $user['roleData'] = $pravo;
         return $user;
     }
-    
+
     /*
      * Metoda, která vybere veškerá přístupová práva z databáze
      * @returns pole s veškerými daty
@@ -158,23 +176,43 @@ class Database {
             return null;
         }
     }
- 
+
 //TODO    
     public function allPosts() {
         $q = "SELECT * FROM akonig_prispevky;";
         $res = $this->execute($q);
         return $res;
     }
-    
-    public function getPost(){
-        
+
+    public function getPost($id) {
+        $q = "SELECT * FROM akonig_prispevky WHERE id = '". $id ."';";
+        $post = $this->execute($q);
+        if ($post != null) {
+            return $post['0'];
+        } else {
+            return null;
+        }
     }
-    
-    public function addPost() {
-        
+
+    public function addPost($login, $title, $content, $tags) {
+        if (!(isset($this->db))) {
+            return false;
+        }
+        $user = $this->getUser($login);
+
+        if ($user != null) {
+            $id = $user['ID'];        
+            $q = "INSERT INTO akonig_prispevky(autor,nazev,obsah,tag)
+                VALUES ($id,'$title','$content','$tags')";
+            $this->execute($q);
+            return true;
+        } else {
+            return false;
+        }
     }
-    
-    public function appendAutor(){
+
+    public function appendAutor() {
+        
         
     }
 

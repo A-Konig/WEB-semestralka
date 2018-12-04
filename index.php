@@ -36,6 +36,7 @@ $pg["login"] = "Login";
 $pg["register"] = "Registrovat";
 $pg["newPost"] = "Nový příspěvek";
 $pg["terms"] = "Podmínky";
+$pg["logoutPage"] = "Odhlášení";
 
 //vybraná stránka
 if ((array_key_exists($page, $menu)) || (array_key_exists($page, $pg))) {
@@ -62,10 +63,11 @@ if (isset($_POST["submit"])) {
                 $params["user"] = $db->getUser($_POST["name"]);
                 $page = "home";
             } else {
-                echo "<script type='text/javascript'>alert('Špatné heslo nebo uživatelské jméno');</script>";
+                $params["error"] = "Přihlášení se nezdařilo";
             }
         } else if ($_POST["log"] == "logout") {
             $login->logout();
+            $page = "logoutPage";
 
     //registrace
         } else if ($_POST["log"] == "register") {
@@ -75,6 +77,19 @@ if (isset($_POST["submit"])) {
                 $logged = $login->getLogged();
                 $params["user"] = $db->getUser($_POST["login"]);
                 $page = "home";
+            } else {
+                $params["error"] = "Uživatel se stejným přihlašovacím jménem již existuje";
+            }
+        }
+     
+        //nový příspěvek   
+    } else  if ((isset($_POST["post"]))) {
+        if ($_POST["post"] == "newPost") {
+            $author = $login->getLogged();
+            
+            $res = $db->addPost($author['name'], $_POST["headline"], $_POST["content"], $_POST["tags"]);
+            if (!$res) {
+                $params["error"] = "Přidání příspěvku se nezdařilo";
             }
         }
     } else {

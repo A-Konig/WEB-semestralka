@@ -1,8 +1,8 @@
 <?php
 
-echo '<div class="page">';
+echo '<div class="container-fluid">';
 
-echo '<h2>Vítejte!</h2></br>';
+echo '<h2>Vítejte!</h2>';
 echo 'Nacházíte se na webových stránkách <br>';
 echo '<br>';
 
