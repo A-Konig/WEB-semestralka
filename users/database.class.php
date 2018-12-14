@@ -3,64 +3,15 @@
 /*
  * Třída obstarávající interakci s databází 
  */
-
-class Database {
-    /*
-     * PDO
-     */
-
-    private $db;
-
-    /*
-     * Konstruktor
-     */
-
-    public function __construct() {
-        $db_server = DB_SERVER;
-        $db_name = DB_NAME;
-        $db_user = DB_USER;
-        $db_pass = DB_PASS;
-
-        try {
-            $this->db = new PDO("mysql:host=$db_server;dbname=$db_name", $db_user, $db_pass);
-        } catch (exception $e) {
-             echo '<div class="alert alert-warning">
-                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                <strong>Bez připojení k databázi!</strong> Některé funkce webu nemusí být dostupné 
-                </div>';
-        }
-    }
-
-    /*
-     * Metoda apro vykonání SQL příkazů
-     * @param $q obsahuje string s SQL příkazem
-     */
-
-    private function execute($q) {
-        if (isset($this->db)) {
-            $res = $this->db->query($q);
-            if (!$res) {
-                $error = $this->db->errorInfo();
-                echo $error[2];
-//smazat            
-                echo 'chyba při výkonu: ' . $q;
-                return null;
-            } else {
-                $res = $res->fetchAll();
-                return $res;
-            }
-        } else {
-            return null;
-        }
-    }
-
+class Database extends baseModel {
+    //private $db;    
+    
     /*
      * Ověří správnost přihlašovacího jména a hesla
      * @param $login přihlašovací jméno
      * @param $heslo heslo
      * @return boolean
      */
-
     public function authorizeUser($login, $heslo) {
         $user = $this->getUser($login);
         if (($user != null) && ($user['heslo'] == $heslo)) {
@@ -75,35 +26,34 @@ class Database {
      * @return pole s uživateli
      */
     public function allUsers() {
-        $q = "SELECT * FROM akonig_uzivatele";
-        $res = $this->execute($q);
+        $table_name = "uzivatele";
+        $where_array = array();
         
-        if ($res != null) {
-            $users = array();
-            //ke zaždému uživateli zjistí jeho přístupové právo
-            $i = 0;
-            foreach ($res as $index) {
-                $index = $this->appendRight($index);
-                $users[$i] = $index;
-                $i++;
-            }
-            return $users;
-        } else {
-            return null;
+        $i = 0;
+        $users = array();
+        $res = $this->DBSelectAll($table_name, "*", $where_array);
+        foreach ($res as $index) {
+            $index = $this->appendRight($index);
+            $users[$i] = $index;
+            $i++;
         }
-    }
 
+        return $users;
+    }
+    
     /*
      * Metoda, která z databáze zjistí dostupné údaje o daném uživateli.
      * @params $login login uživatele
      * @return
      */
     public function getUser($login) {
-        $q = "SELECT * FROM akonig_uzivatele WHERE login = '" . $login . "';";
-        $users = $this->execute($q);
-
+        $table_name = "uzivatele";
+        $where_array = array();
+        $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
+        
+        $users = $this->DBSelectOne($table_name, "*", $where_array);
         if ($users != null) {
-            $user = $this->appendRight($users['0']);
+            $user = $this->appendRight($users);
             return $user;
         } else {
             return null;
@@ -115,30 +65,55 @@ class Database {
      * @return boolean jestli operace proběhla nebo ne
      */
     public function createUser($jmeno, $login, $heslo, $email, $role) {
-        if (!(isset($this->db))) {
-            return false;
-        }
         if ($this->getUser($login) == null) {
-            $q = "INSERT INTO akonig_uzivatele(login,jmeno,heslo,email,role)
-                VALUES ('$login','$jmeno','$heslo','$email',$role)";
-            $this->execute($q);
+            $table_name = "uzivatele";
+            $item = array("login" => "'$login'", "jmeno" => "'$jmeno'", "heslo" => "'$heslo'", "email" => "'$email'", "role" => "$role");
+        
+            $res = $this->DBInsert($table_name, $item);
+        
+            //printr($uzivatele);
+            if ($res != null) {
+                return true;
+            } else {
+                return false;
+            }
         } else {
             return false;
         }
     }
 
+    public function updateEmail($login, $email) {
+        $table_name = "uzivatele";
+        $toUpdate = array("email" => "'$email'");
+        $where_array = array();
+        $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
+        
+        $this->DBUpdate($table_name, $toUpdate, $where_array);
+    }
+    
+    public function updatePassword($login, $password) {
+        $table_name = "uzivatele";
+        $toUpdate = array("heslo" => "'$password'");
+        $where_array = array();
+        $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
+        
+        $this->DBUpdate($table_name, $toUpdate, $where_array);
+    }
+    
     /*
      * Metoda, která smaže uživatele z databáze
      */
 
     public function deleteUser($login) {
-        if (!(isset($this->db))) {
-            return false;
-        }
         if ($this->getUser($login) != null) {
-            $q = "DELETE FROM akonig_uzivatele WHERE login='$login';";
-            $this->execute($q);
+            $table_name = "uzivatele";
+            $where_array = array();
+            $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
+            $this->DBDelete($table_name, $where_array, null);
+
             return true;
+        } else {
+            return false;
         }
     }
 
@@ -147,9 +122,9 @@ class Database {
      */
 
     private function appendRight($user) {
-        $pravo = $this->getRight($user['role']);
-        $user['roleData'] = $pravo;
-        return $user;
+       $pravo = $this->getRight($user['role']);
+       $user['roleData'] = $pravo;
+       return $user;
     }
 
     /*
@@ -157,9 +132,11 @@ class Database {
      * @returns pole s veškerými daty
      */
     public function allRights() {
-        $q = "SELECT * FROM akonig_role;";
-        $res = $this->execute($q);
-        return $res;
+        $table_name = "role";
+        $where_array = array();
+        
+        $rights = $this->DBSelectAll($table_name, "*", $where_array);
+        return $rights;
     }
 
     /*
@@ -168,52 +145,181 @@ class Database {
      * @returns array s daty o právu
      */
     public function getRight($id) {
-        $q = "SELECT * FROM akonig_role WHERE id = '" . $id . "';";
-        $pravo = $this->execute($q);
-        if ($pravo != null) {
-            return $pravo['0'];
+        $table_name = "role";
+        $where_array = array();
+        $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
+        
+        $right= $this->DBSelectOne($table_name, "*", $where_array);
+        if ($right != null) {
+            return $right;
         } else {
             return null;
         }
     }
+    
+    public function updateRight($login, $rightId) {
+        $table_name = "uzivatele";
+        $toUpdate = array("role" => "$rightId");
+        $where_array = array();
+        $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
+        
+        $this->DBUpdate($table_name, $toUpdate, $where_array);
+    }
 
 //TODO    
     public function allPosts() {
-        $q = "SELECT * FROM akonig_prispevky;";
-        $res = $this->execute($q);
+        $table_name = "prispevky";
+        $where_array = array();
+        
+        $res = $this->DBSelectAll($table_name, "*", $where_array);
+        
         return $res;
     }
 
     public function getPost($id) {
-        $q = "SELECT * FROM akonig_prispevky WHERE id = '". $id ."';";
-        $post = $this->execute($q);
-        if ($post != null) {
-            return $post['0'];
+        $table_name = "prispevky";
+        $where_array = array();
+        $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
+        
+        $res = $this->DBSelectOne($table_name, "*", $where_array);
+        if ($res != null) {
+            return $res;
         } else {
             return null;
         }
     }
 
     public function addPost($login, $title, $content, $tags) {
-        if (!(isset($this->db))) {
-            return false;
-        }
         $user = $this->getUser($login);
-
+        $table_name = "prispevky";
+        
         if ($user != null) {
-            $id = $user['ID'];        
-            $q = "INSERT INTO akonig_prispevky(autor,nazev,obsah,tag)
-                VALUES ($id,'$title','$content','$tags')";
-            $this->execute($q);
+            $item = array("nazev" => "'$title'", "obsah" => "'$content'", "tag" => "'$tags'", "autor" => "'$login'");
+        
+            $this->DBInsert($table_name, $item);
+            //printr($uzivatele);
             return true;
         } else {
             return false;
         }
     }
-
-    public function appendAutor() {
+    
+    public function deletePost($id) {
+        if ($this->getPost($id) != null) {
+            $table_name = "prispevky";
+            $where_array = array();
+            $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
+            $this->DBDelete($table_name, $where_array, null);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    public function publishPost($id){
+        $table_name = "prispevky";
+        $toUpdate = array("schvaleny" => "1");
+        $where_array = array();
+        $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
         
+        $this->DBUpdate($table_name, $toUpdate, $where_array);
+    }
+    
+    public function editPost($id, $headline, $content, $tags) {
+        $table_name = "prispevky";
+        $toUpdate = array("nazev" => "'$headline'", "obsah" => "'$content'", "tag" => "'$tags'");
+        $where_array = array();
+        $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
         
+        $this->DBUpdate($table_name, $toUpdate, $where_array);
+    }
+    
+    public function allRecs() {
+        $table_name = "hodnoceni";
+        $where_array = array();
+        
+        $res = $this->DBSelectAll($table_name, "*", $where_array);
+        
+        return $res;
+    }
+    
+    public function updateRec($recenzent, $postId, $num) {
+        $table_name = "prispevky";
+        if ($recenzent != null) {
+            $toUpdate = array("rec$num" => "'$recenzent'");
+        } else {
+            $toUpdate = array("rec$num" => "NULL");
+        }
+        $where_array = array();
+        $where_array[] = array("column" => "id", "symbol" => "=", "value" => $postId);
+        
+        $this->DBUpdate($table_name, $toUpdate, $where_array);
+    }
+    
+    public function addRec($login, $content, $lang, $orig, $overview, $idPost) {
+        $user = $this->getUser($login);
+        $table_name = "hodnoceni";
+        
+        if ($user != null) {
+            $item = array("autor" => "'$login'", "obsah" => "'$content'", "celkove" => "'$overview'", "jazyk" => "'$lang'", "originalita" => "'$orig'", "prispevek" => "'$idPost'");
+        
+            $this->DBInsert($table_name, $item);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+     public function editRec($id, $content, $summary, $lang, $orig) {
+        $table_name = "hodnoceni";
+        $toUpdate = array("obsah" => "'$content'", "celkove" => "$summary", "jazyk" => "$lang", "originalita" => "$orig");
+        $where_array = array();
+        $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
+        
+        $this->DBUpdate($table_name, $toUpdate, $where_array);
+    }
+    
+    public function getRecs($idPost) {
+        $table_name = "hodnoceni";
+        $where_array = array();
+        $where_array[] = array("column" => "prispevek", "symbol" => "=", "value" => $idPost);
+        
+        $res = $this->DBSelectAll($table_name, "*", $where_array);
+        if ($res != null) {
+            return $res;
+        } else {
+            return null;
+        }
+    }
+    
+    public function getOneRec($id) {
+        $table_name = "hodnoceni";
+        $where_array = array();
+        $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
+        
+        $res = $this->DBSelectOne($table_name, "*", $where_array);
+        if ($res != null) {
+            return $res;
+        } else {
+            return null;
+        }
+    }
+    
+     public function publishRec($id){
+        $table_name = "hodnoceni";
+        $toUpdate = array("schvaleny" => "1");
+        $where_array = array();
+        $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
+        
+        $this->DBUpdate($table_name, $toUpdate, $where_array);
+    }
+    
+    public function deleteRec($id) {
+        $table_name = "hodnoceni";
+        $where_array = array();
+        $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
+        $this->DBDelete($table_name, $where_array, null);
+        return true;
     }
 
 }

@@ -1,6 +1,7 @@
 <?php
 echo '<div class="container-fluid">';
 
+
 echo '<h3>Pro přispěvatele</h3>';
 
 echo '<h4>Jak přispívat</h4>';

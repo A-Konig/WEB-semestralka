@@ -8,11 +8,17 @@ if (isset($params["error"])) {
                 <strong>Chyba!</strong> '.$params["error"].'
           </div>';
     unset($params["error"]);
+} else if (isset($params["message"])) {
+    echo '<div class="alert alert-success alert-dismissible">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>Úspěch!</strong> '.$params["message"].'
+          </div>';
+    unset($params["message"]);
 }
 
 //pro přihlášené uživatele
 if ($user != null) {
-    if ($user['roleData']['ID'] != '3') {
+    if ($user['roleData']['id'] == '3') {
         echo '<h2>Nový příspěvek:</h2>';
 
         echo '<form class="form-horizontal" action="" method="POST"">
@@ -52,20 +58,6 @@ if ($user != null) {
                 </div>
          </form>';  
         
-/*        
-        echo '<form class = "submit" action="" method="POST">';
-
-        echo '<span class="formHead">Název:</span> <input class="postLine" type="text" name="Název" required><br>';
-        echo '<span class="formHead">Obsah:</span> <input class="postContent" type="text" name="Obsah" required><br>';
-        echo '<span class="formHead">Tagy:</span> <input class="postLine" type="text" name="Tags"><br>';
-
-        echo '<br>';
-        echo '<input type="hidden" name="postAction" value="newPost"><br>';
-        echo '<span class="floatcenter"><input class="inputButton" type="submit" name="submit" value="Nový příspěvek"></span>';
-        echo '</form>';
-    } else {
-        echo 'Tato stránka je jen pro přispěvatele.';
-*/
     }
 
 //pro nepřihlášené uživatele    

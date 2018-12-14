@@ -8,6 +8,12 @@ if (isset($params["error"])) {
                 <strong>Chyba!</strong> '.$params["error"].'
           </div>';
     unset($params["error"]);
+} else if (isset($params["message"])) {
+    echo '<div class="alert alert-success alert-dismissible">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>Úspěch!</strong> '.$params["message"].'
+          </div>';
+    unset($params["message"]);
 }
 
 //pro přihlášené uživatele

@@ -10,13 +10,12 @@ if ($params["user"] != null) {
                     <li class=""><a href="#">'.$params["user"]["login"].'</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    <li><a href="/index.php?page=register"><span class="glyphicon glyphicon-cog"></span> Nastavení</a></li>
+                    <li><a href="/index.php?page=settings"><span class="glyphicon glyphicon-cog"></span> Nastavení</a></li>
                     <li>
                         <a>
                         <form class="form-inline" action="" method="POST">
-                            <span class="glyphicon glyphicon-log-out"></span>
                             <input type="hidden" name="log" value="logout">
-                            <input type="submit" name="submit" class="linkButton" value="Odhlásit">
+                            <button type="submit" class="linkButton" name="submit"> <span class="glyphicon glyphicon-log-out"></span> Odhlásit</button>
                         </form>
                         </a>
                     </li>
@@ -24,15 +23,6 @@ if ($params["user"] != null) {
             </div>
         </nav>
     ';
-
-
-    
-
-//    echo $params["user"]["login"];
-//    echo '<form action="" method="POST">';
-//    echo '<input type="hidden" name="log" value="logout">';
-//    echo '<input class="inputButton floatright" type="submit" name="submit" value="Odhlásit">';
-//    echo '</form>';
     
 } else {
     echo '
@@ -49,9 +39,6 @@ if ($params["user"] != null) {
         </nav>
     ';
 
-    
-//    echo ' <span class="accountOp"><a class="button floatright" href="index.php?page=register">Register</a></span>';
-//    echo ' <span class="accountOp"><a class="button floatright" href="index.php?page=login">Login</a></span> ';
 }
 
 //echo '</div>';

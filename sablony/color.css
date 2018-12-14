@@ -193,6 +193,10 @@ body {
     background-color: lightgray;
 }
 
+.well-padd {
+    padding-bottom: 65px;
+}
+
 .well-member {
     min-height: 110px;
 }
@@ -205,8 +209,25 @@ body {
     margin-bottom: 0px;
 }
 
+.glyphicon {
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
 .glyphicon-remove {
      color: darkred;
+}
+
+.glyphicon-trash {
+    color: red;
+}
+
+.glyphicon-ok {
+    color: greenyellow;
+}
+
+.glyphicon-pencil {
+    color: lightblue;
 }
 
 .linkButton {
@@ -214,4 +235,25 @@ body {
      border: none;
      cursor: pointer; 
      padding: 0px;
+}
+
+.undecoratedLink {
+    color:white;
+}
+
+.undecoratedLink:hover{
+    color:white;
+    text-decoration: underline;
+}
+
+.extendLink {
+    padding: 5px;
+}
+
+.breakpoint {
+    border-color: lightgray;
+}
+
+.text {
+    padding-top: 10px;
 }
