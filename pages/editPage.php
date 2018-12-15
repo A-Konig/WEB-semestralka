@@ -128,13 +128,6 @@ if (isset($params['user'])) {
                            <input type="file" class="form-control-static" name="file" id="file">
                     </div>
                 </div>      
-
-                    <div class="form-group">
-                        <label class="control-label col-sm-2" for="tags">Tags:</label>
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" name="tags" value="'.$post['tag'].'">
-                        </div>
-                    </div> 
                     
                     <div class="form-group"> 
                         <div class="col-sm-offset-2 col-sm-9">

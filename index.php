@@ -1,12 +1,11 @@
 <?php
-
 //include
 include_once("inc/functions.php");
 include_once('inc/config.php');
 include_once('controllers/baseController.php');
-include_once('users/baseModel.php');
-include("users/user.class.php");
-include("users/database.class.php");
+include_once('model/baseModel.php');
+include("model/user.class.php");
+include("model/database.class.php");
 
 $login = new User;
 $db = new Database;
@@ -31,6 +30,7 @@ if (isset($_REQUEST["page"])) {
 //obsloužení formulářů
 if (isset($_POST["submit"])) {
     
+//uživatel    
     if ((isset($_POST["log"]))) {
 
     //login    
@@ -64,10 +64,18 @@ if (isset($_POST["submit"])) {
         } else if ($_POST["log"] == "delete") {   
             $res = $db->deleteUser($_POST["loginUser"]);
             if (!$res) {
-                $params["error"] = "Smazání příspěvku se nezdařilo";
+                $params["error"] = "Smazání uživatele se nezdařilo";
             } else {
                 $params["message"] = "Uživatel byl smazán";
             }
+            
+        } else if ($_POST["log"] == "block") {   
+            $db->blockUser($_POST["loginUser"]);
+            $params["message"] = "Uživatel ".$_POST["loginUser"]." zablokován";
+            
+        } else if ($_POST["log"] == "unblock") {   
+            $db->unblockUser($_POST["loginUser"]); 
+            $params["message"] = "Uživatel ".$_POST["loginUser"]." odblokován";
      
     //změna e-mailu    
         } else if ($_POST["log"] == "changeMail") { 
@@ -95,12 +103,14 @@ if (isset($_POST["submit"])) {
             $params["message"] = "Role změněna";
         }    
         
+
+//příspěvek        
     } else  if ((isset($_POST["post"]))) {
     //nový příspěvek   
         if ($_POST["post"] == "newPost") {
             $author = $login->getLogged();
             
-            $res = $db->addPost($author["name"], $_POST["headline"], $_POST["content"], $_POST["tags"]);
+            $res = $db->addPost($author["name"], $_POST["headline"], $_POST["content"]);
             if (!$res) {
                 $params["error"] = "Přidání příspěvku se nezdařilo";
             } else {
@@ -119,12 +129,16 @@ if (isset($_POST["submit"])) {
 
     //upravit příspěvek        
         } else if ($_POST["post"] == "edit") {
-           $db->editPost($_POST["idPost"], $_POST["headline"], $_POST["content"], $_POST["tags"]);
+           $db->editPost($_POST["idPost"], $_POST["headline"], $_POST["content"]);
            $params["message"] = "Příspěvek byl upraven";
             
     //smazat příspěvek
         } else if ($_POST["post"] == "delete") {
             $recs = $db->getRecs($_POST["idPost"]);
+            
+            foreach ($recs as $rec) {
+                $db->deleteRec($rec['id']);
+            }
             
             $res = $db->deletePost($_POST["idPost"]);
             if (!$res) {
@@ -140,6 +154,9 @@ if (isset($_POST["submit"])) {
             
             $params["message"] = "Recenzent byl přiřazen";
         }  
+        
+        
+//recenze        
     } else  if ((isset($_POST["rec"]))) {
     //nová recenze
         if ($_POST["rec"] == "newRec") {

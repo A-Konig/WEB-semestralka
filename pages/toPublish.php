@@ -46,13 +46,20 @@ if ($params["user"] != null) {
                           ';
                     
                     //schválení příspěvku
-                    echo '
-                        <form class="form-inline floatright" action="" method="POST">
-                            <input type="hidden" name="post" value="publish">
-                            <input type="hidden" name="idPost" value="' . $post['id'] . '">
-                            <button type="submit" class="linkButton" name="submit"> <span class="glyphicon glyphicon-ok"></span></button>
-                        </form>
-                         ';
+                    $recsPost = $params['db']->getRecs($post['id']);
+                    if (isset($recsPost)) {
+                        $num = count($recsPost);
+                    }
+                    
+                    if ($num >= 3) {
+                        echo '
+                            <form class="form-inline floatright" action="" method="POST">
+                                <input type="hidden" name="post" value="publish">
+                                <input type="hidden" name="idPost" value="' . $post['id'] . '">
+                                <button type="submit" class="linkButton" name="submit"> <span class="glyphicon glyphicon-ok"></span></button>
+                            </form>
+                             ';
+                    }
 
                     echo "<a class='undecoratedLink' href='/index.php?page=viewPost&id=" . $post['id'] . "'><span class='extendLink'>"
                     . $post['nazev'] . "</span></a>";
@@ -73,7 +80,7 @@ if ($params["user"] != null) {
                                 <select  id="rec" name="loginRec">';
                         echo '<option></option>';
                         foreach ($allUsers as $user) {
-                            if ($user['role'] == 2) {
+                            if ($user['role'] == 2 && $user['block'] == 0) {
                                 if ($user[login] == $post['rec'.$i]) {
                                     echo '<option selected>' . $user['login'] . '</option>';
                                 } else {
@@ -99,7 +106,7 @@ if ($params["user"] != null) {
 
                     echo '</div>';
 
-                    echo $post['autor'] . "<br>" . $post['tag'];
+                    echo $post['autor'] . "<br>";
                     echo '</div>';
                     echo '</div>';
                     echo '</div>';
@@ -116,6 +123,9 @@ if ($params["user"] != null) {
     } else {
         echo 'Nedostatečné oprávnění';
     }
+} else {
+    echo 'Tato stránka je pouze pro přihlášené uživatele<br>';
+    echo '<a href="index.php?page=login"><button type="button" class="btn">Login</button></a>';
 }
 
 echo '</div>';

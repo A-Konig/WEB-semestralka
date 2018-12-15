@@ -45,7 +45,7 @@ if (isset($params["user"])) {
 
                 echo '</div>';
 
-                echo $post['autor'] . "<br>" . $post['tag'];
+                echo $post['autor'] . "<br>";
                 echo '</div>';
             }
         }
@@ -72,16 +72,14 @@ if (isset($params["user"])) {
                 $recs = $params['db']->getRecs($post['id']);
                 if ($recs != null) {
                     foreach ($recs as $rec) {
-                        if ($rec['schvaleny'] == 1) {
-                            $outOf += 5;
-                            $value += $rec['hodnoceni'];
-                        }
+                        $outOf += 5;
+                        $value += $rec['celkove'];
                     }
                 }
                 echo $value . ' / ' . $outOf;     
             echo '</div>';
 
-                echo $post['autor'] . "<br>" . $post['tag'];
+                echo $post['autor'] . "<br>";
                 echo '</div>';
             }
         }

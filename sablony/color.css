@@ -230,6 +230,14 @@ body {
     color: lightblue;
 }
 
+.glyphicon-minus-sign {
+    color: yellow;
+}
+
+.glyphicon-ok-sign {
+    color: greenyellow;
+}
+
 .linkButton {
      background: none;
      border: none;

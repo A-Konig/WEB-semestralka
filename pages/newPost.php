@@ -18,7 +18,7 @@ if (isset($params["error"])) {
 
 //pro přihlášené uživatele
 if ($user != null) {
-    if ($user['roleData']['id'] == '3') {
+    if ($user['roleData']['id'] == '3' && $user['block'] == '0') {
         echo '<h2>Nový příspěvek:</h2>';
 
         echo '<form class="form-horizontal" action="" method="POST"">
@@ -43,13 +43,6 @@ if ($user != null) {
                     </div>
                 </div>      
 
-                <div class="form-group">
-                    <label class="control-label col-sm-2" for="tags">Tags:</label>
-                    <div class="col-sm-10">
-                       <input type="text" class="form-control" name="tags" placeholder="#tags">
-                    </div>
-                </div> 
-                
                 <div class="form-group"> 
                     <div class="col-sm-offset-2 col-sm-9">
                         <input type="hidden" name="post" value="newPost">
@@ -58,6 +51,8 @@ if ($user != null) {
                 </div>
          </form>';  
         
+    } else {
+        echo '<h2><span class="glyphicon glyphicon-remove"></span> Nedostatečné oprávnění </h2>';
     }
 
 //pro nepřihlášené uživatele    

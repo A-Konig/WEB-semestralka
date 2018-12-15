@@ -16,6 +16,7 @@ if (isset($params["error"])) {
     unset($params["message"]);
 }
 
+if ($user != null) {
 echo '<h3>Nastavení</h3>';
 
 
@@ -90,5 +91,10 @@ echo '<form class="form-horizontal" action="" method="POST">
                     </div>
                 </div>
             </form>';
+
+} else {
+    echo 'Tato stránka je pouze pro přihlášené uživatele<br>';
+    echo '<a href="index.php?page=login"><button type="button" class="btn">Login</button></a>';
+}
 
 echo '</div>';

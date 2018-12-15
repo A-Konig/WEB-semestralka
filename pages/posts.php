@@ -21,15 +21,17 @@ if (isset($params["error"])) {
 
 //pro přihlášené uživatele
 echo '<span class="floatright">';
-if ($params["user"] != null) {
-    if ($params["user"]["role"] == 3) {
+if ($user != null) {
+    if ($user["role"] == 3) {
         echo '<a href="index.php?page=myPosts"><button type="button" class="btn">Mé příspěvky</button></a> ';
-        echo '<a href="index.php?page=newPost"><button type="button" class="btn">Nový příspěvek</button></a> ';
+        if ($user['block'] == '0') {
+            echo '<a href="index.php?page=newPost"><button type="button" class="btn">Nový příspěvek</button></a> ';
+        }
     } else
-    if ($params["user"]["role"] == 2) {
+    if ($user["role"] == 2) {
         echo '<a href="index.php?page=myRec"><button type="button" class="btn">Mé recenze</button></a>';
     } else
-    if ($params["user"]["role"] == 1) {
+    if ($user["role"] == 1) {
         echo '<a href="index.php?page=toPublish"><button type="button" class="btn">Ke schválení</button></a>';
     }
 }
@@ -43,7 +45,6 @@ if ($allPosts != null) {
             $index['autor'];
             $index['id'];
             $index['obsah'];
-            $index['tag'];
 
             echo '<div class="container-fluid">';
             echo '<div class="posts">';
@@ -63,15 +64,8 @@ if ($allPosts != null) {
                           ';
                 }
             }
-
-            echo "<a class='undecoratedLink' href='/index.php?page=viewPost&id=" . $index['id'] . "'><span class='extendLink'>"
-            . $index['nazev'] . "</span></a>";
-
-            echo "</div>";
-
-
-            echo "<div class='well well-bottom'>";
-
+            
+             //hodnocení
             echo '<div class="floatright">';
             echo 'Hodnocení: ';
             $value = 0;
@@ -86,10 +80,20 @@ if ($allPosts != null) {
             echo $value . ' / ' . $outOf;     
             echo '</div>';
 
+            echo "<a class='undecoratedLink' href='/index.php?page=viewPost&id=" . $index['id'] . "'><span class='extendLink'>"
+            . $index['nazev'] . "</span></a>";
+
+            echo "</div>";
+
+
+            echo "<div class='well well-bottom'>";
+
+            echo '<div class="floatright">'.$rec['datum'].'</div>';
+            
             echo '<div>';
             echo '</div>';
 
-            echo $index['autor'] . "<br>" . $index['tag'];
+            echo $index['autor'] . "<br>" ;
             echo '</div>';
             echo '</div>';
             echo '</div>';

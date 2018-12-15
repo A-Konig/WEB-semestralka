@@ -1,6 +1,5 @@
 <?php
 
-$allRecs = $params['db']->allRecs();
 $allPosts = $params['db']->allPosts();
 
 echo '<div class="container-fluid">';
@@ -47,14 +46,6 @@ if (isset($params["user"])) {
     
                 echo '<div class="well well-sm well-top">';
 
-                echo "<a class='undecoratedLink' href='/index.php?page=viewPost&id=" . $post['id'] . "'><span class='extendLink'>"
-                        . $post['nazev'] . "</span></a>";
-
-                echo "</div>";
-
-
-                echo "<div class='well well-bottom'>";
-
                 echo '<div class="floatright">';
                 echo 'Hodnocení: ';
                 $value = 0;
@@ -68,8 +59,18 @@ if (isset($params["user"])) {
                 }
                 echo $value . ' / ' . $outOf;     
                 echo '</div>';
+                
+                echo "<a class='undecoratedLink' href='/index.php?page=viewPost&id=" . $post['id'] . "'><span class='extendLink'>"
+                        . $post['nazev'] . "</span></a>";
 
-                echo $post['autor'] . "<br>" . $post['tag'];
+                echo "</div>";
+
+
+                echo "<div class='well well-bottom'>";
+
+                echo '<div class="floatright">'.$post['datum'].'</div>';
+
+                echo $post['autor'] . "<br>";
                 echo '</div>';
                 echo '</div>';
                 echo '</div>';
@@ -84,6 +85,8 @@ if (isset($params["user"])) {
         
         echo '<h4>Čekající na schválení</h4>';
         $i = 0;
+        
+        $allRecs = $params['db']->allRecs();
         if ($allRecs != null) {
             foreach ($allRecs as $rec) {
                 $post = $params['db']->getPost($rec['prispevek']);
@@ -108,16 +111,15 @@ if (isset($params["user"])) {
                     }
                     echo '</div>';
                 
-                    echo "<a class='undecoratedLink' href='/index.php?page=viewPost&id=" . $post['id'] . "'><span class='extendLink'>"
+                    echo "<a class='undecoratedLink' href='/index.php?page=viewPost&id=" . $post['id'] . "'><span class='extendLink'>Rec:"
                      . $post['nazev'] . "</span></a>";
                     echo '</div>';
 
                     echo "<div class='well well-bottom'>";
 
-                    echo '<div class="floatright">';
-
-                    echo '</div>';
-                
+                    echo '<div class="floatright">'.$rec['datum'].'</div>';
+                    
+                    echo '<br>';
                     echo $rec['obsah'];
                     echo '</div>';
                     echo '</div>';
