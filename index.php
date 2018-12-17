@@ -36,10 +36,27 @@ if (isset($_POST["submit"])) {
     //login    
         if ($_POST["log"] == "login") {
             if ($db->authorizeUser($_POST["name"], $_POST["password"]) ) {
-                $login->login($_POST["name"]);
-                $logged = $login->getLogged();
-                $params["user"] = $db->getUser($_POST["name"]);
-               header("Location: /index.php?page=home");
+                $allBlocked = $db->blockedUsers();
+
+                //není user zablokován?
+                $blocked = false;
+                if (($allBlocked != null)) {
+                    foreach ($allBlocked as $blockedUser) {
+                        if ($blockedUser['login'] == $_POST["name"]) {
+                            echo $blockedUser['login'] .'=='. $_POST["name"];
+                                $blocked = true;
+                        }
+                    }
+                }
+                
+                if ($blocked == false) {
+                    $login->login($_POST["name"]);
+                    $logged = $login->getLogged();
+                    $params["user"] = $db->getUser($_POST["name"]);
+                    header("Location: /index.php?page=home");
+                } else {
+                    $params["error"] = "Váš účet byl zablokován";
+                }
             } else {
                 $params["error"] = "Přihlášení se nezdařilo";
             }
@@ -97,6 +114,12 @@ if (isset($_POST["submit"])) {
                 $params["error"] = "Špatné heslo";
             }
             
+    //změna jména        
+        } else if ($_POST["log"] == "changeName") { 
+            $log = $login->getLogged();
+            $db->changeName($log['name'], $_POST["name"]);
+            $params["message"] = "Změna jména provedena";
+            
     //změna role        
         } else if ($_POST["log"] == "setRight") {   
             $res = $db->updateRight($_POST["login"], $_POST["right"]);
@@ -110,9 +133,43 @@ if (isset($_POST["submit"])) {
         if ($_POST["post"] == "newPost") {
             $author = $login->getLogged();
             
-            $res = $db->addPost($author["name"], $_POST["headline"], $_POST["content"]);
+            $fileName = null;
+            $ok = 0;
+            if (isset($_FILES["file"])) {
+                if ($_FILES["file"]["name"] != null) {
+                    $fileType = strtolower(pathinfo($_FILES["file"]["name"],PATHINFO_EXTENSION));
+
+                    if ($fileType == "pdf") {
+                        //velikost souboru
+                        if ($_FILES["file"]["size"] > 500000) {
+                            $fileError = "Nahraný soubor je moc velký, povolená velikost do 500kB";
+                            $ok = 1;
+                        } else {
+                            //nahrání na server s novým jménem
+                            $date = getdate();
+                            $target_dir = "files/";
+                            $target_file = $author["name"] . "_" . $date['yday'] . "-" . $date['year'] . "-" .
+                                           $date['seconds']. "-" . $date['minutes'] . "-" . $date['hours'] .".pdf" ;
+                
+                            move_uploaded_file($_FILES["file"]["tmp_name"], $target_dir.$target_file);
+                        }
+                    } else {
+                        $fileError = "Nahraný soubor není ve správném formátu, akceptovány jsou pouze pdf soubory";
+                        $ok = 1;
+                    }
+                }
+            }
+            
+            if (isset($target_file)) {
+                $fileName = $target_file;
+            }
+            if ($ok == 1) {
+                $params["error"] = $fileError;
+            }
+            
+            $res = $db->addPost($author["name"], $_POST["headline"], $_POST["content"], $fileName);
             if (!$res) {
-                $params["error"] = "Přidání příspěvku se nezdařilo";
+                $params["error"] .= "Přidání příspěvku se nezdařilo";
             } else {
                 $params["message"] = "Příspěvek byl přidán";
             }
@@ -129,8 +186,43 @@ if (isset($_POST["submit"])) {
 
     //upravit příspěvek        
         } else if ($_POST["post"] == "edit") {
-           $db->editPost($_POST["idPost"], $_POST["headline"], $_POST["content"]);
-           $params["message"] = "Příspěvek byl upraven";
+            $fileName = null;
+            $ok = 0;
+            if (isset($_FILES["file"])) {
+                if ($_FILES["file"]["name"] != null) {
+                    $author = $login->getLogged();
+                    $fileType = strtolower(pathinfo($_FILES["file"]["name"],PATHINFO_EXTENSION));
+
+                    if ($fileType == "pdf") {
+                        //velikost souboru
+                        if ($_FILES["file"]["size"] > 500000) {
+                            $fileError = "Nahraný soubor je moc velký, povolená velikost do 500kB";
+                            $ok = 1;
+                        } else {
+                            //nahrání na server s novým jménem
+                            $date = getdate();
+                            $target_dir = "files/";
+                            $target_file = $author["name"] . "_" . $date['yday'] . "-" . $date['year'] . "-" .
+                                           $date['seconds']. "-" . $date['minutes'] . "-" . $date['hours'] .".pdf" ;
+                
+                            move_uploaded_file($_FILES["file"]["tmp_name"], $target_dir.$target_file);
+                        }
+                    } else {
+                        $fileError = "Nahraný soubor není ve správném formátu, akceptovány jsou pouze pdf soubory";
+                        $ok = 1;
+                    }
+                }
+            }
+             
+            if (isset($target_file)) {
+                $fileName = $target_file;
+            }
+            if ($ok == 1) {
+                $params["error"] = $fileError;
+            }
+            
+            $db->editPost($_POST["idPost"], $_POST["headline"], $_POST["content"], $fileName);
+            $params["message"] = "Příspěvek byl upraven";
             
     //smazat příspěvek
         } else if ($_POST["post"] == "delete") {
@@ -194,11 +286,70 @@ if (isset($_POST["submit"])) {
             } else {
                 $params["error"] = "Publikování recenze se nezdařilo";
             }
-        } 
+        }
+        
+//soubor        
+    } else  if ((isset($_POST["file"]))) {
+    //smazat soubor   
+        if ($_POST["file"] == "delete") {
+            $db->deleteFile($_POST['idPost']);
+            $params["message"] = "Soubor byl odstraněn";
+        
+            
+    //změnit ikonku        
+        } else if ($_POST["file"] == "icon") {
+            $target_dir = "img/";
+            $fileName = basename($_FILES["file"]["name"]);
+            $fileType = strtolower(pathinfo($fileName,PATHINFO_EXTENSION));
+            $ok = 1;
+            
+            // Check if image file is a actual image or fake image
+            if(getimagesize($_FILES["file"]["tmp_name"]) == false) {
+                $params["error"] = "Špatný formát obrázku";
+                $ok = 0;
+            }
+            
+            // Check file size
+            if ($_FILES["file"]["size"] > 100000) {
+                $params["error"] = "Jen soubory do velikosti 100kB jsou povoleny";
+                $ok = 0;
+            }
+            
+            // Allow certain file formats
+            if($fileType != "jpg" && $fileType != "png" && $fileType != "jpeg"
+                    && $fileType != "gif" ) {
+                $params["error"] = "Špatný formát obrázku, povoleny: PNG, JPEG, GIF";
+                $ok = 0;
+            }
+            // Check if $uploadOk is set to 0 by an error
+            if ($ok == 1) {
+                $date = getdate();
+                $author = $login->getLogged();
+                $fileName = $author["name"] . "_" . $date['yday'] . "-" . $date['year'] . "-" .
+                               $date['seconds']. "-" . $date['minutes'] . "-" . $date['hours'] .$fileType ;
+                if (move_uploaded_file($_FILES["file"]["tmp_name"], $target_dir.$fileName)) {
+                    $params["message"] = "Obrázek byl nahrán";
+                    
+                    $db->changeIcon($author["name"], $fileName);
+                } else {
+                    $params["error"] = "Nahrání se nezdařilo";
+                }
+            }
+        }
         
     //nic    
     } else {
         echo 'Nic se nestalo';
+    }
+}
+
+$allBlocked = $db->blockedUsers();
+$active = $login->getLogged();
+if (($allBlocked != null) && ($active != null)) {
+    foreach ($allBlocked as $blocked) {
+        if ($blocked['login'] == $active['name']) {
+            $login->logout();
+        }
     }
 }
 

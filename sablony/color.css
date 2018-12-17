@@ -160,6 +160,13 @@ body {
     float: left;
     padding: 2px;
 }
+
+.imgEd {
+    width: 117px;
+    height: 139px;
+    padding: 2px;
+}
+
 .postLine {
     width: 75%;
 }

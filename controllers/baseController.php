@@ -10,7 +10,7 @@ class baseController {
     public function render($contents, $params) {
         $menu = $params["menu"];
         $user =  phpWrapperFromFile("pages/unlogged.php", $params);
-        echo $this->twig->render("basic.php", array("user" => $user, "contents" => $contents, "pages" => $menu));
+        echo $this->twig->render("basic.html", array("user" => $user, "contents" => $contents, "pages" => $menu));
     }
     
 }

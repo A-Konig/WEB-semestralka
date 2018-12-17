@@ -61,7 +61,7 @@ if ($user != null) {
                     echo $index['login'];
                     echo '</div>';
                     echo '<div class="well well-bottom well-member">';
-                    echo '<div class ="img"><img src="../img/empty.png" width="70px" height="90px" ></div>';
+                    echo '<div class ="img"><img src="img/'.$index['ikonka'].'" width="70px" height="90px" ></div>';
                     echo 'Jméno: ' . $index['jmeno'] . '<br>';
 
                     if (($params["user"]["role"] == 1) && ($params["user"]["login"] != $index['login'])) {
@@ -148,7 +148,7 @@ if ($user != null) {
                     echo $index['login'];
                     echo '</div>';
                     echo '<div class="well well-bottom well-member">';
-                    echo '<div class ="img"><img src="../img/empty.png" width="70px" height="90px" ></div>';
+                    echo '<div class ="img"><img src="img/'.$index['ikonka'].'" width="70px" height="90px" ></div>';
                     echo 'Jméno: ' . $index['jmeno'] . '<br>';
 
                     if (($params["user"]["role"] == 1) && ($params["user"]["login"] != $index['login'])) {

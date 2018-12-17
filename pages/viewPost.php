@@ -37,6 +37,19 @@ if (isset($_GET['id'])) {
         echo '<b>Autor: </b>' . $post['autor'] . '';
         echo '<div class="floatright">' . $post['datum'] . '</div>';
         echo '<div class="text"><p>' . $post['obsah'] . '</p></div>';
+        
+        if ($post['file'] != null) {
+            echo '<b><span class="glyphicon glyphicon-file"></span><a href="files/'.$post['file'].'">Zobrazit přiložený soubor</a></b>';
+            if (($params['user']['login'] == $post['autor']) && ($post['schvaleny'] == 0)) {
+                echo '
+                            <form class="form-inline" action="" method="POST">
+                                <input type="hidden" name="file" value="delete">
+                                <input type="hidden" name="idPost" value="' . $post['id'] . '">
+                                <button type="submit" class="btn" name="submit"><span class="glyphicon glyphicon-trash"></span>Odstranit soubor</button>
+                            </form>
+                            ';
+            }
+        }
 
         //hodnocení
         if ($recs != null) {
@@ -50,13 +63,15 @@ if (isset($_GET['id'])) {
 
                 //pro admina - mazání recenze
                 if ($params["user"] != null) {
-                    if ($params["user"]["login"] == $rec['autor']) {
+                    //pro autora upravování
+                    if ($params["user"]["login"] == $rec['autor'] && $post['schvaleny'] == 0) {
                         echo '<a class="floatright" href="/index.php?page=editPage&idr=' . $rec['id'] . '">
                         <span class="glyphicon glyphicon-pencil"></span></button>
                         </a>
                          ';
                     }
 
+                    //pro admina smazání
                     if ($params["user"]["role"] == 1) {
                         echo '
                             <form class="form-inline floatright" action="" method="POST">
@@ -120,10 +135,7 @@ if (isset($_GET['id'])) {
                 echo '<br>';
                 echo '<h4>Přidat recenzi:</h4>';
 
-                if ($user['block'] == 1) {
-                    echo '<h2><span class="glyphicon glyphicon-remove"></span> Nedostatečné oprávnění </h2>';
-                } else {
-                    echo '<form class="form-horizontal" action="" method="POST"">
+                echo '<form class="form-horizontal" action="" method="POST"">
                         <div class="form-group">
                             <label class="control-label col-sm-2" for="content">Obsah:</label>
                             <div class="col-sm-10"> 
@@ -131,46 +143,46 @@ if (isset($_GET['id'])) {
                             </div>
                         </div>';
 
-                    //hodnocení originality      ¨
-                    echo '<div class="form-group">
+                //hodnocení originality      ¨
+                echo '<div class="form-group">
                             <label class="control-label col-sm-2" for="orig">Originalita</label>
                         ';
-                    for ($i = 1; $i < 6; $i++) {
-                        echo '<label class="radio-inline"><input type="radio" name="orig" value="' . $i . '">';
-                        for ($j = 0; $j < $i; $j++) {
-                            echo '<span class="glyphicon glyphicon-star-empty"></span>';
-                        }
-                        echo '</label>';
+                for ($i = 1; $i < 6; $i++) {
+                    echo '<label class="radio-inline"><input type="radio" name="orig" value="' . $i . '">';
+                    for ($j = 0; $j < $i; $j++) {
+                        echo '<span class="glyphicon glyphicon-star-empty"></span>';
                     }
-                    echo '</div>';
+                    echo '</label>';
+                }
+                echo '</div>';
 
-                    //hodnocení jazyka      
-                    echo '<div class="form-group">
+                //hodnocení jazyka      
+                echo '<div class="form-group">
                             <label class="control-label col-sm-2" for="lang">Jazyk</label>
                         ';
-                    for ($i = 1; $i < 6; $i++) {
-                        echo '<label class="radio-inline"><input type="radio" name="lang" value="' . $i . '">';
-                        for ($j = 0; $j < $i; $j++) {
-                            echo '<span class="glyphicon glyphicon-star-empty"></span>';
-                        }
-                        echo '</label>';
+                for ($i = 1; $i < 6; $i++) {
+                    echo '<label class="radio-inline"><input type="radio" name="lang" value="' . $i . '">';
+                    for ($j = 0; $j < $i; $j++) {
+                        echo '<span class="glyphicon glyphicon-star-empty"></span>';
                     }
-                    echo '</div>';
+                    echo '</label>';
+                }
+                echo '</div>';
 
-                    //celkové hodnocení      
-                    echo '<div class="form-group">
+                //celkové hodnocení      
+                echo '<div class="form-group">
                             <label class="control-label col-sm-2" for="summary">Celkově</label>
                         ';
-                    for ($i = 1; $i < 6; $i++) {
-                        echo '<label class="radio-inline"><input type="radio" name="summary" value="' . $i . '">';
-                        for ($j = 0; $j < $i; $j++) {
-                            echo '<span class="glyphicon glyphicon-star-empty"></span>';
-                        }
-                        echo '</label>';
+                for ($i = 1; $i < 6; $i++) {
+                    echo '<label class="radio-inline"><input type="radio" name="summary" value="' . $i . '">';
+                    for ($j = 0; $j < $i; $j++) {
+                        echo '<span class="glyphicon glyphicon-star-empty"></span>';
                     }
-                    echo '</div>';
+                    echo '</label>';
+                }
+                echo '</div>';
 
-                    echo '     </div>
+                echo '     </div>
                         <div class="form-group"> 
                             <div class="col-sm-offset-2 col-sm-9">
                                 <input type="hidden" name="idPost" value="' . $_GET['id'] . '">
@@ -179,7 +191,6 @@ if (isset($_GET['id'])) {
                             </div>
                         </div>
                     </form>';
-                }
             }
 
             if (($params["user"]["role"] == 1)) {

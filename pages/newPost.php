@@ -8,7 +8,9 @@ if (isset($params["error"])) {
                 <strong>Chyba!</strong> '.$params["error"].'
           </div>';
     unset($params["error"]);
-} else if (isset($params["message"])) {
+}
+
+if (isset($params["message"])) {
     echo '<div class="alert alert-success alert-dismissible">
                 <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                 <strong>Úspěch!</strong> '.$params["message"].'
@@ -18,10 +20,12 @@ if (isset($params["error"])) {
 
 //pro přihlášené uživatele
 if ($user != null) {
-    if ($user['roleData']['id'] == '3' && $user['block'] == '0') {
-        echo '<h2>Nový příspěvek:</h2>';
+    if ($user['roleData']['id'] == '3') {
+        ?>
+        <h2>Nový příspěvek:</h2>
 
-        echo '<form class="form-horizontal" action="" method="POST"">
+        
+        <form class="form-horizontal" action="" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                     <label class="control-label col-sm-2" for="headline">Nadpis:</label>
                     <div class="col-sm-10">
@@ -49,8 +53,9 @@ if ($user != null) {
                         <input class="btn" type="submit" name="submit" value="Publikovat">
                     </div>
                 </div>
-         </form>';  
-        
+         </form>
+    
+    <?php    
     } else {
         echo '<h2><span class="glyphicon glyphicon-remove"></span> Nedostatečné oprávnění </h2>';
     }

@@ -100,7 +100,7 @@ if (isset($params["user"])) {
 
                     //edit recenze
                     echo '<a class="floatright" href="/index.php?page=editPage&idr='.$rec['id'].'">
-                        <span class="glyphicon glyphicon-pencil"></span></button>
+                        <span class="glyphicon glyphicon-pencil"></span>
                         </a>
                          ';
                 

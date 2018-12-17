@@ -22,19 +22,23 @@ echo '<h3>Nastavení</h3>';
 
 echo '
     <div class="row">
-    <div class="col-sm-3">
-    ikonka
-    </div>
+    <div class="col-sm-3">';
+
+echo '<img src="img/'.$user['ikonka'].'" class="imgEd">';
+
+
+echo
+    '</div>
     <div class="col-sm-3">
     <table class="table">
         <tbody>
             <tr>
                 <td>Login</td>
-                <td>'.$params['user']['login'].'</td>
+                <td>'.$user['login'].'</td>
             </tr>
             <tr>
                 <td>Jméno</td>
-                <td>'.$params['user']['jmeno'].'</td>
+                <td>'.$user['jmeno'].'</td>
             </tr>
             <tr>
                 <td>Email</td>
@@ -46,6 +50,43 @@ echo '
     </div>
     </div>
         ';    
+
+echo '<h4>Změna ikonky</h4>';
+echo '
+    <div class="row">
+    <form class="form-horizontal" action="" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label class="control-label col-sm-2" for="pas1">Soubor:</label>
+            <div class="col-sm-3">
+                <input type="file" class="form-control-static" name="file" id="file">
+            </div>
+        </div>   
+
+        <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-9">
+            <input type="hidden" name="file" value="icon">
+            <input type="hidden" name="idPost" value="' . $user['login'] . '">
+            <button type="submit" class="btn" name="submit">Změnit ikonku</button></div>
+        </div> 
+    </form>
+    </div>
+     ';
+
+echo '<h4>Změna jména</h4>';
+    echo '<form class="form-horizontal" action="" method="POST">
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="name">Nové jméno:</label>
+                    <div class="col-sm-3">
+                       <input type="text" class="form-control" name="name" placeholder="Jméno">
+                    </div>
+                </div>
+                <div class="form-group"> 
+                    <div class="col-sm-offset-2 col-sm-7">
+                        <input type="hidden" name="log" value="changeName">
+                        <input class="btn" type="submit" name="submit" value="Uložit">
+                    </div>
+                </div>
+            </form>';
 
 
 echo '<h4>Změna hesla</h4>';

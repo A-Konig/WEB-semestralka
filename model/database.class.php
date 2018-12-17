@@ -46,6 +46,29 @@ class Database extends baseModel {
     }
     
     /**
+     * Metoda, která získá blokované uživatele
+     */
+    public function blockedUsers() {
+        $table_name = "uzivatele";
+        $where_array = array();
+        $where_array[] = array("column" => "block", "symbol" => "=", "value" => '1');
+        
+        $res = $this->DBSelectAll($table_name, "*", $where_array);
+        
+        $i = 0;
+        $users = array();        
+        if ($res != null) {
+            foreach ($res as $index) {
+                $index = $this->appendRight($index);
+                $users[$i] = $index;
+                $i++;
+            }
+        }
+
+        return $users;
+    }
+    
+    /**
      * Metoda, která z databáze zjistí dostupné údaje o daném uživateli.
      * @params $login login uživatele
      * @return pole s daty o uživateli nebo null
@@ -75,10 +98,23 @@ class Database extends baseModel {
         $loginE = str_replace("'","''",$login);
         $emailE = str_replace("'","''",$email);        
         
+        if ( ($login != $loginE) || ($emailE != $email) ) {
+            return false;
+        }
+        
+        if ( (strlen($login) > 20) || (strlen($jmeno) > 60) || (strlen($email) > 60)  ) {
+            return false;
+        }
+        
+        $email = filter_var($email, FILTER_SANITIZE_STRING);
+        $login = filter_var($login, FILTER_SANITIZE_STRING);
+        $jmenoE = filter_var($jmenoE, FILTER_SANITIZE_STRING);
+
+        
         if ($this->getUser($login) == null) {
             $table_name = "uzivatele";
             $passH = password_hash($heslo, PASSWORD_DEFAULT);        
-            $item = array("login" => "'$loginE'", "jmeno" => "'$jmenoE'", "heslo" => "'$passH'", "email" => "'$emailE'", "role" => "$role");
+            $item = array("login" => "'$login'", "jmeno" => "'$jmenoE'", "heslo" => "'$passH'", "email" => "'$email'", "role" => "$role");
         
             $res = $this->DBInsert($table_name, $item);
         
@@ -101,8 +137,17 @@ class Database extends baseModel {
      */
     public function updateEmail($login, $email) {
         if ($this->getUser($login) != null) {
-            $email = str_replace("'","''",$email);
+            $emailE = str_replace("'","''",$email);
+            if ( ($login != $loginE) || ($emailE != $email) ) {
+                return false;
+            }
         
+            if ( (strlen($email) > 60)  ) {
+                return false;
+            }
+            
+            $email = filter_var($email, FILTER_SANITIZE_STRING);
+            
             $table_name = "uzivatele";
             $toUpdate = array("email" => "'$email'");
             $where_array = array();
@@ -297,16 +342,23 @@ class Database extends baseModel {
      * @param type $content obsah článku
      * @return boolean  zda operace proběhla nebo ne
      */
-    public function addPost($login, $title, $content) {
+    public function addPost($login, $title, $content, $filename) {
         $user = $this->getUser($login);
         $table_name = "prispevky";
         
-        $loginE = str_replace("'","''",$login);
         $titleE = str_replace("'","''",$title); 
         $contentE = str_replace("'","''",$content); 
         
+        $contentE = filter_var($contentE, FILTER_SANITIZE_STRING);
+        $titleE = filter_var($titleE, FILTER_SANITIZE_STRING);
+        
+        if ( (strlen($titleE) > 50)   ) {
+            return false;
+        }
+        
         if ($user != null) {
-            $item = array("nazev" => "'$titleE'", "obsah" => "'$contentE'", "autor" => "'$loginE'", "datum" => "CURRENT_DATE()");
+            $item = array("nazev" => "'$titleE'", "obsah" => "'$contentE'", "autor" => "'$login'", "datum" => "CURRENT_DATE()",
+                          "file" => "'$filename'");
         
             $res = $this->DBInsert($table_name, $item);
             
@@ -360,6 +412,52 @@ class Database extends baseModel {
     }
     
     /**
+     * Metoda, která smaže file z příspěvku.
+     * 
+     * @param type $id  id příspěvku
+     */
+    public function deleteFile($id){
+        $table_name = "prispevky";
+        $toUpdate = array("file" => "NULL");
+        $where_array = array();
+        $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
+        
+        $this->DBUpdate($table_name, $toUpdate, $where_array);
+    }
+    
+    /**
+     * Metoda, která změní ikonku uživatele.
+     * 
+     * @param type $login  loign uživatele
+     * @param type $filename název souboru s ikonkou
+     */
+    public function changeIcon($login, $filename){
+        $table_name = "uzivatele";
+        $toUpdate = array("ikonka" => "'$filename'");
+        $where_array = array();
+        $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
+        
+        $this->DBUpdate($table_name, $toUpdate, $where_array);
+    }
+    
+    /**
+     * Metoda, která změní jméno uživatele.
+     * 
+     * @param type $login  loign uživatele
+     * @param type $name jméno uživatele
+     */
+    public function changeName($login, $name){
+        $name = filter_var($name, FILTER_SANITIZE_STRING);
+        
+        $table_name = "uzivatele";
+        $toUpdate = array("jmeno" => "'$name'");
+        $where_array = array();
+        $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
+        
+        $this->DBUpdate($table_name, $toUpdate, $where_array);
+    }
+    
+    /**
      * Metoda, která upraví daný příspěvek v databázi.
      * 
      * @param type $id  id příspěvku
@@ -367,15 +465,25 @@ class Database extends baseModel {
      * @param type $content     text příspěvku
      * @return boolean  informace zda operace proběhla nebo ne 
      */
-    public function editPost($id, $headline, $content) {
+    public function editPost($id, $headline, $content, $filename) {
         $post = $this->getPost($id);
         
         if ($post != null) {
-            $headline = str_replace("'","''",$headline);
-            $content = str_replace("'","''",$content);
+            $filenameE = "";
+            
+            $content = filter_var($content, FILTER_SANITIZE_STRING);
+            $headline = filter_var($headline, FILTER_SANITIZE_STRING);
         
             $table_name = "prispevky";
-            $toUpdate = array("nazev" => "'$headline'", "obsah" => "'$content'");
+        
+            if ($filename != null) {
+                $filenameE = str_replace("'","''",$filename);
+                $toUpdate = array("nazev" => "'$headline'", "obsah" => "'$content'", "file" => "'$filenameE'");
+            } else {
+                $toUpdate = array("nazev" => "'$headline'", "obsah" => "'$content'");
+            }
+            
+            
             $where_array = array();
             $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
         
@@ -410,8 +518,6 @@ class Database extends baseModel {
     public function updateRec($recenzent, $postId, $num) {
         $table_name = "prispevky";
         if ($recenzent != null) {
-            $recenzent = str_replace("'","''",$recenzent); 
-            
             $toUpdate = array("rec$num" => "'$recenzent'");
         } else {
             $toUpdate = array("rec$num" => "NULL");
@@ -438,8 +544,9 @@ class Database extends baseModel {
         $table_name = "hodnoceni";
         
         if ($user != null) {
-            $login = str_replace("'","''",$login);
-            $content = str_replace("'","''",$content); 
+            $content = str_replace("'","''",$content);
+            
+            $content = filter_var($content, FILTER_SANITIZE_STRING);
             
             $item = array("autor" => "'$login'", "obsah" => "'$content'", "celkove" => "'$overview'", "jazyk" => "'$lang'", "originalita" => "'$orig'", "prispevek" => "'$idPost'",  "datum" => "CURRENT_DATE()");
         
@@ -460,6 +567,9 @@ class Database extends baseModel {
      */
     public function editRec($id, $content, $summary, $lang, $orig) {
         $table_name = "hodnoceni";
+        
+        $content = filter_var($content, FILTER_SANITIZE_STRING);
+        
         $toUpdate = array("obsah" => "'$content'", "celkove" => "$summary", "jazyk" => "$lang", "originalita" => "$orig");
         $where_array = array();
         $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);

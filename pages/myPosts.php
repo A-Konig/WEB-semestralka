@@ -31,7 +31,7 @@ if (isset($params["user"])) {
 
                 //edit postu
                 echo '<a class="floatright" href="/index.php?page=editPage&idp='.$post['id'].'">
-                    <span class="glyphicon glyphicon-pencil"></span></button>
+                    <span class="glyphicon glyphicon-pencil"></span>
                     </a>
                      ';
                 
@@ -41,11 +41,9 @@ if (isset($params["user"])) {
 
                 echo "<div class='well well-bottom'>";
 
-                echo '<div class="floatright">';
-
-                echo '</div>';
-
                 echo $post['autor'] . "<br>";
+                echo '</div>';
+                
                 echo '</div>';
             }
         }
@@ -65,7 +63,7 @@ if (isset($params["user"])) {
 
                 echo "<div class='well well-bottom'>";
 
-             echo '<div class="floatright">';
+                echo '<div class="floatright">';
                 echo 'Hodnocení: ';
                 $value = 0;
                 $outOf = 0;
@@ -77,9 +75,10 @@ if (isset($params["user"])) {
                     }
                 }
                 echo $value . ' / ' . $outOf;     
-            echo '</div>';
+                echo '</div>';
 
                 echo $post['autor'] . "<br>";
+                echo '</div>';
                 echo '</div>';
             }
         }
@@ -88,6 +87,7 @@ if (isset($params["user"])) {
     echo 'Tato stránka je pouze pro přihlášené uživatele<br>';
     echo '<a href="index.php?page=login"><button type="button" class="btn">Login</button></a>';
 }
+
 
 echo '</div>';
 

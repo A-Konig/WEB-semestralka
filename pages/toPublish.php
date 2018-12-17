@@ -74,9 +74,7 @@ if ($params["user"] != null) {
                     //nastavování recenzentů
                     for ($i = 1; $i < 4; $i++ ) {
                         echo '
-                                <form class="form-inline floatright" action="" method="POST">
-                                    Recenzent:
-                                <div class="form-group">
+                                <form class="form-inline floatright" action="" method="POST">Recenzent:<div class="form-group">
                                 <select  id="rec" name="loginRec">';
                         echo '<option></option>';
                         foreach ($allUsers as $user) {

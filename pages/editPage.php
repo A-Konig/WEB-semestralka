@@ -27,7 +27,7 @@ if (isset($params['user'])) {
 
                 echo '<h4>Upravit recenzi:</h4>';
                 
-                  echo '<form class="form-horizontal" action="" method="POST"">
+                  echo '<form class="form-horizontal" action="" method="POST">
                         <div class="form-group">
                             <label class="control-label col-sm-2" for="content">Obsah:</label>
                             <div class="col-sm-10"> 
@@ -86,7 +86,7 @@ if (isset($params['user'])) {
                   }
                   echo '</div>';
                   
-                  echo '     </div>
+                  echo '
                            <div class="form-group"> 
                         <div class="col-sm-offset-2 col-sm-9">
                             <input type="hidden" name="idRec" value="' . $_GET['idr'] . '">
@@ -107,7 +107,7 @@ if (isset($params['user'])) {
             if ( ($post['autor'] == $params['user']['login']) && ($post['schvaleny'] == 0) ) {
                 echo '<h4>Upravit příspěvek:</h4>';
                 
-                echo '<form class="form-horizontal" action="" method="POST"">
+                echo '<form class="form-horizontal" action="" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                     <label class="control-label col-sm-2" for="headline">Nadpis:</label>
                     <div class="col-sm-10">
@@ -127,7 +127,7 @@ if (isset($params['user'])) {
                     <div class="col-sm-10">
                            <input type="file" class="form-control-static" name="file" id="file">
                     </div>
-                </div>      
+                </div>       
                     
                     <div class="form-group"> 
                         <div class="col-sm-offset-2 col-sm-9">
