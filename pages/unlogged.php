@@ -1,18 +1,14 @@
 <?php
 
-//echo '<div class="user">';
 
 if ($user != null) {
     echo '
         <nav class="navbar navbar-inverse">
             <div class="container-fluid">
                 <ul class="nav navbar-nav">
-                    <li class=""><a href="#">';
-    if ($user['block'] == 1) {
-       echo '<span class="glyphicon glyphicon-minus-sign"></span> ';
-    }
+                    <li class=""><a>';
     
-    echo $params["user"]["login"].'</a></li>
+    echo $user["login"].'</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <li><a href="/index.php?page=settings"><span class="glyphicon glyphicon-cog"></span> Nastavení</a></li>
@@ -45,5 +41,3 @@ if ($user != null) {
     ';
 
 }
-
-//echo '</div>';

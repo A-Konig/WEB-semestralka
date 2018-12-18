@@ -8,16 +8,18 @@ echo '<div class="container-fluid">';
 if (isset($params["error"])) {
     echo '<div class="alert alert-danger alert-dismissible">
                 <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                <strong>Chyba!</strong> ' . $params["error"] . '
+                <strong>Chyba!</strong> '.$params["error"].'
           </div>';
     unset($params["error"]);
-} else if (isset($params["message"])) {
+}
+if (isset($params["message"])) {
     echo '<div class="alert alert-success alert-dismissible">
                 <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                 <strong>Úspěch!</strong> ' . $params["message"] . '
           </div>';
     unset($params["message"]);
 }
+
 
 //pro přihlášené uživatele
 echo '<span class="floatright">';
@@ -54,6 +56,7 @@ if ($allPosts != null) {
             //pro přihlášené uživatele
             if ($params["user"] != null) {
                 //pro admina - mazání příspěvků
+                
                 if ($params["user"]["role"] == 1) {
                     echo '
                             <form class="form-inline floatright" action="" method="POST">
@@ -62,6 +65,8 @@ if ($allPosts != null) {
                                 <button type="submit" class="linkButton" name="submit"><span class="glyphicon glyphicon-trash"></span></button>
                             </form>
                           ';
+                    
+                    echo '<span class="glyphicon glyphicon-none floatright"></span>';
                 }
             }
             

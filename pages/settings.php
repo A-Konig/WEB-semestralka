@@ -8,10 +8,11 @@ if (isset($params["error"])) {
                 <strong>Chyba!</strong> '.$params["error"].'
           </div>';
     unset($params["error"]);
-} else if (isset($params["message"])) {
+}
+if (isset($params["message"])) {
     echo '<div class="alert alert-success alert-dismissible">
                 <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                <strong>Úspěch!</strong> '.$params["message"].'
+                <strong>Úspěch!</strong> ' . $params["message"] . '
           </div>';
     unset($params["message"]);
 }
@@ -24,7 +25,14 @@ echo '
     <div class="row">
     <div class="col-sm-3">';
 
-echo '<img src="img/'.$user['ikonka'].'" class="imgEd">';
+$file= 'img/'.$user['ikonka'];
+
+if (file_exists($file)) {
+    echo '<img src="img/'.$user['ikonka'].'" class="imgEd">';
+} else {
+    echo '<img src="img/empty.png" class="imgEd">';
+}
+
 
 
 echo
@@ -42,7 +50,7 @@ echo
             </tr>
             <tr>
                 <td>Email</td>
-                <td>'.$params['user']['email'].'</td>
+                <td>'.$user['email'].'</td>
             </tr>
             <tr> <td></td> <td></td> </tr>
         </tbody>

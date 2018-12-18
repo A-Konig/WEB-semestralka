@@ -9,10 +9,11 @@ echo '<div class="container-fluid">';
 if (isset($params["error"])) {
     echo '<div class="alert alert-danger alert-dismissible">
                 <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                <strong>Chyba!</strong> ' . $params["error"] . '
+                <strong>Chyba!</strong> '.$params["error"].'
           </div>';
     unset($params["error"]);
-} else if (isset($params["message"])) {
+}
+if (isset($params["message"])) {
     echo '<div class="alert alert-success alert-dismissible">
                 <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                 <strong>Úspěch!</strong> ' . $params["message"] . '
@@ -30,13 +31,14 @@ if ($params["user"] != null) {
             $i = 0;
             foreach ($posts as $post) {
                 if ($post['schvaleny'] == 0) {
+                    $recsPost = $params['db']->getRecs($post['id']);
 
                     echo '<div class="container-fluid">';
                     echo '<div class="posts">';
 
                     echo '<div class="well well-sm well-top">';
-
-                    //mazání příspěvku
+                    
+                    //smazání příspěvku
                     echo '
                         <form class="form-inline floatright" action="" method="POST">
                             <input type="hidden" name="post" value="delete">
@@ -44,12 +46,28 @@ if ($params["user"] != null) {
                             <button type="submit" class="linkButton" name="submit"> <span class="glyphicon glyphicon-trash"></span></button>
                         </form>
                           ';
+
+                    echo '<span class="glyphicon glyphicon-none floatright"></span>';
+                    
+                    //zamítnutí příspěvku
+                    echo '
+                        <form class="form-inline floatright" action="" method="POST">
+                            <input type="hidden" name="post" value="deny">
+                            <input type="hidden" name="idPost" value="' . $post['id'] . '">
+                            <button type="submit" class="linkButton" name="submit"> <span class="glyphicon glyphicon-remove remPost"></span></button>
+                        </form>
+                          ';
+                    
+                    echo '<span class="glyphicon glyphicon-none floatright"></span>';
                     
                     //schválení příspěvku
-                    $recsPost = $params['db']->getRecs($post['id']);
                     if (isset($recsPost)) {
                         $num = count($recsPost);
                     }
+                    
+                    echo '<div class="floatright">';
+                    echo $num.'/3';
+                    echo '</div>';
                     
                     if ($num >= 3) {
                         echo '
@@ -78,7 +96,14 @@ if ($params["user"] != null) {
                                 <select  id="rec" name="loginRec">';
                         echo '<option></option>';
                         foreach ($allUsers as $user) {
-                            if ($user['role'] == 2 && $user['block'] == 0) {
+                            $ok = 1;
+                            foreach ($recsPost as $postRec) {
+                                if ($postRec['autor'] == $user['login']) {
+                                    $ok = 0;
+                                }
+                            }
+                            
+                            if ($user['role'] == 2 && $user['block'] == 0 && $ok == 1 ) {
                                 if ($user[login] == $post['rec'.$i]) {
                                     echo '<option selected>' . $user['login'] . '</option>';
                                 } else {

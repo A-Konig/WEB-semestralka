@@ -10,17 +10,18 @@ if (isset($params["error"])) {
                 <strong>Chyba!</strong> '.$params["error"].'
           </div>';
     unset($params["error"]);
-} else if (isset($params["message"])) {
+}
+if (isset($params["message"])) {
     echo '<div class="alert alert-success alert-dismissible">
                 <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                <strong>Úspěch!</strong> '.$params["message"].'
+                <strong>Úspěch!</strong> ' . $params["message"] . '
           </div>';
     unset($params["message"]);
 }
 
 
-if (isset($params["user"])) {
-    if ($params["user"]["role"] == 2) {
+if (isset($user)) {
+    if ($user["role"] == 2) {
         $i = 0;
         echo '<h4>Přiřazené</h4>';
         foreach ($allPosts as $post) {
@@ -107,8 +108,11 @@ if (isset($params["user"])) {
                     //hodnocení
                     echo '<div class="floatright">';
                     for ($i = 0; $i < $rec['celkove']; $i++) {
-                        echo '<span class="glyphicon glyphicon-star-empty"></span> ';
+                        echo '<span class="glyphicon glyphicon-star"></span> ';
                     }
+                    for ($l = 0; $l < (5 - $rec['celkove']); $l++) {
+                        echo '<span class="glyphicon glyphicon-star-empty"></span>';
+                }
                     echo '</div>';
                 
                     echo "<a class='undecoratedLink' href='/index.php?page=viewPost&id=" . $post['id'] . "'><span class='extendLink'>Rec:"

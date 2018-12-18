@@ -8,7 +8,8 @@ if (isset($params["error"])) {
                 <strong>Chyba!</strong> ' . $params["error"] . '
           </div>';
     unset($params["error"]);
-} else if (isset($params["message"])) {
+}
+if (isset($params["message"])) {
     echo '<div class="alert alert-success alert-dismissible">
                 <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
                 <strong>Úspěch!</strong> ' . $params["message"] . '
@@ -95,16 +96,18 @@ if (isset($params['user'])) {
                         </div>
                     </div>
                 </form>';  
+            } else {
+                echo '<h2><span class="glyphicon glyphicon-remove"></span> Nedostatečné oprávnění</h2>';
             }
         } else {
-            echo '<h2><span class="glyphicon glyphicon-remove"></span> Nedostatečné oprávnění</h2>';
+            echo '<h2><span class="glyphicon glyphicon-remove"></span> Nic k zobrazení </h2>';
         }
 
-        //upravení příspěvku    
+//upravení příspěvku    
     } else if (isset($_GET['idp'])) {
         $post = $params['db']->getPost($_GET["idp"]);
         if ($post != null) {
-            if ( ($post['autor'] == $params['user']['login']) && ($post['schvaleny'] == 0) ) {
+            if ( ($post['autor'] == $params['user']['login']) && ($post['schvaleny'] == 0 || $post['schvaleny'] == -1) ) {
                 echo '<h4>Upravit příspěvek:</h4>';
                 
                 echo '<form class="form-horizontal" action="" method="POST" enctype="multipart/form-data">
@@ -139,11 +142,18 @@ if (isset($params['user'])) {
                     
                 </form>';
                 
+            } else {
+                echo '<h2><span class="glyphicon glyphicon-remove"></span> Nedostatečné oprávnění</h2>';
             }
         } else {
-            echo '<h2><span class="glyphicon glyphicon-remove"></span> Nedostatečné oprávnění</h2>';
+            echo '<h2><span class="glyphicon glyphicon-remove"></span> Nic k zobrazení </h2>';
         }
-    }
+    } else {
+            echo '<h2><span class="glyphicon glyphicon-remove"></span> Nic k zobrazení </h2>';
+        }
+} else {
+    echo 'Tato stránka je pouze pro přihlášené uživatele<br>';
+    echo '<a href="index.php?page=login"><button type="button" class="btn">Login</button></a>';
 }
 
 

@@ -9,6 +9,13 @@ if (isset($params["error"])) {
           </div>';
     unset($params["error"]);
 }
+if (isset($params["message"])) {
+    echo '<div class="alert alert-success alert-dismissible">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>Úspěch!</strong> ' . $params["message"] . '
+          </div>';
+    unset($params["message"]);
+}
 
 //pro přihlášené uživatele
 if ($user != null) {

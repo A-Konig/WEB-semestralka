@@ -27,7 +27,7 @@ if (isset($_GET['id'])) {
 
         //editování postu
         if (($params['user']['login'] == $post['autor']) && ($post['schvaleny'] == 0)) {
-            echo '<a class="floatright btn" href="/index.php?page=editPage&idp=' . $post['id'] . '">
+            echo '<a class="floatright btn controlBtn" href="/index.php?page=editPage&idp=' . $post['id'] . '">
                     <span class="glyphicon glyphicon-pencil"></span> Editovat</button>
                     </a>
                      ';
@@ -36,18 +36,27 @@ if (isset($_GET['id'])) {
         echo '<h3>' . $post['nazev'] . '</h3>';
         echo '<b>Autor: </b>' . $post['autor'] . '';
         echo '<div class="floatright">' . $post['datum'] . '</div>';
-        echo '<div class="text"><p>' . $post['obsah'] . '</p></div>';
+        
+        $obsah = str_replace("\n","<br>",$post['obsah']);
+        
+        echo '<div class="text"><p>' . $obsah . '</p></div>';
         
         if ($post['file'] != null) {
-            echo '<b><span class="glyphicon glyphicon-file"></span><a href="files/'.$post['file'].'">Zobrazit přiložený soubor</a></b>';
-            if (($params['user']['login'] == $post['autor']) && ($post['schvaleny'] == 0)) {
-                echo '
+            $file= 'files/'.$post['file'];
+
+            if (file_exists($file)) {
+                echo '<b><a href="files/'.$post['file'].'"><span class="glyphicon glyphicon-file"></span>  Zobrazit přiložený soubor</a></b>';
+                if (($params['user']['login'] == $post['autor']) && ($post['schvaleny'] == 0)) {
+                    echo '
                             <form class="form-inline" action="" method="POST">
                                 <input type="hidden" name="file" value="delete">
                                 <input type="hidden" name="idPost" value="' . $post['id'] . '">
-                                <button type="submit" class="btn" name="submit"><span class="glyphicon glyphicon-trash"></span>Odstranit soubor</button>
+                                <button type="submit" class="btn controlBtn" name="submit">Odstranit soubor</button>
                             </form>
-                            ';
+                               ';
+                }
+                
+                
             }
         }
 
@@ -86,32 +95,40 @@ if (isset($_GET['id'])) {
                 //celkové hodnocení
                 echo '<div class="floatright">';
                 for ($i = 0; $i < $rec['celkove']; $i++) {
-                    echo '<span class="glyphicon glyphicon-star-empty"></span> ';
+                    echo '<span class="glyphicon glyphicon-star"></span> ';
+                }
+                for ($l = 0; $l < (5 - $rec['celkove']); $l++) {
+                        echo '<span class="glyphicon glyphicon-star-empty"></span>';
                 }
                 echo '</div>';
 
                 echo '</div>';
                 echo '<div class="well well-bottom">';
 
-                echo '<div class="floatright">' . $rec['datum'] . '</div>';
-
                 //hodnocení jazyka
-                echo '<div>';
+                echo '<div class="floatright rightAlign">';
                 echo 'Jazyk: ';
                 for ($i = 0; $i < $rec['jazyk']; $i++) {
-                    echo '<span class="glyphicon glyphicon-star-empty"></span> ';
+                    echo '<span class="glyphicon glyphicon-star"></span>';
                 }
-                echo '</div>';
-
+                for ($l = 0; $l < (5 - $rec['jazyk']); $l++) {
+                        echo '<span class="glyphicon glyphicon-star-empty"></span>';
+                }
+                echo '<br>';
+                
                 //hodnocení originality
-                echo '<div>';
                 echo 'Originalita:';
                 for ($i = 0; $i < $rec['originalita']; $i++) {
-                    echo '<span class="glyphicon glyphicon-star-empty"></span> ';
+                    echo '<span class="glyphicon glyphicon-star"></span>';
+                }
+                for ($l = 0; $l < (5 - $rec['originalita']); $l++) {
+                        echo '<span class="glyphicon glyphicon-star-empty"></span>';
                 }
                 echo '</div>';
-
-
+                
+                
+                echo '<div>' . $rec['datum'] . '</div>';
+                echo '<br>';
                 echo $rec['obsah'];
                 echo '</div>';
                 echo '</div>';
@@ -197,9 +214,9 @@ if (isset($_GET['id'])) {
                 //mazání příspěvku
                 echo '
                             <form class="form-inline floatright" action="" method="POST">
-                                <input type="hidden" name="post" value="delete">
+                                <input type="hidden" name="post" value="deny">
                                 <input type="hidden" name="idPost" value="' . $post['id'] . '">
-                                <button type="submit" class="btn" name="submit"> <span class="glyphicon glyphicon-trash"></span></button>
+                                <button type="submit" class="btn controlBtn" name="submit"> <span class="glyphicon glyphicon-remove remPost"></span></button>
                             </form>
                               ';
 
@@ -213,7 +230,7 @@ if (isset($_GET['id'])) {
                                 <form class="form-inline floatright" action="" method="POST">
                                     <input type="hidden" name="post" value="publish">
                                     <input type="hidden" name="idPost" value="' . $post['id'] . '">
-                                    <button type="submit" class="btn" name="submit"> <span class="glyphicon glyphicon-ok"></span></button>
+                                    <button type="submit" class="btn controlBtn" name="submit"> <span class="glyphicon glyphicon-ok"></span></button>
                                 </form>
                              ';
                 }

@@ -9,7 +9,6 @@ if (isset($params["error"])) {
           </div>';
     unset($params["error"]);
 }
-
 if (isset($params["message"])) {
     echo '<div class="alert alert-success alert-dismissible">
                 <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>

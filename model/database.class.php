@@ -98,17 +98,19 @@ class Database extends baseModel {
         $loginE = str_replace("'","''",$login);
         $emailE = str_replace("'","''",$email);        
         
-        if ( ($login != $loginE) || ($emailE != $email) ) {
-            return false;
-        }
-        
-        if ( (strlen($login) > 20) || (strlen($jmeno) > 60) || (strlen($email) > 60)  ) {
-            return false;
-        }
-        
         $email = filter_var($email, FILTER_SANITIZE_STRING);
         $login = filter_var($login, FILTER_SANITIZE_STRING);
         $jmenoE = filter_var($jmenoE, FILTER_SANITIZE_STRING);
+        
+        if ( ($login != $loginE) || ($emailE != $email) ) {
+            return false;
+        }
+        if ( (strlen($login) > 20) || (strlen($jmeno) > 60) || (strlen($email) > 60)  ) {
+            return false;
+        }
+        if ( (trim($login) == "") || (trim($login) != $login) || (trim($email)=="") ) {
+            return false;
+        }
 
         
         if ($this->getUser($login) == null) {
@@ -138,7 +140,7 @@ class Database extends baseModel {
     public function updateEmail($login, $email) {
         if ($this->getUser($login) != null) {
             $emailE = str_replace("'","''",$email);
-            if ( ($login != $loginE) || ($emailE != $email) ) {
+            if ( ($emailE != $email) ) {
                 return false;
             }
         
@@ -147,6 +149,10 @@ class Database extends baseModel {
             }
             
             $email = filter_var($email, FILTER_SANITIZE_STRING);
+            
+            if ( (trim($email)=="") ) {
+            return false;
+            }
             
             $table_name = "uzivatele";
             $toUpdate = array("email" => "'$email'");
@@ -298,12 +304,17 @@ class Database extends baseModel {
      * @param type $rightId nová hodnota přístupového práva
      */
     public function updateRight($login, $rightId) {
-        $table_name = "uzivatele";
-        $toUpdate = array("role" => "$rightId");
-        $where_array = array();
-        $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
+        if ($this->getUser($login) != null) {
+            $table_name = "uzivatele";
+            $toUpdate = array("role" => "$rightId");
+            $where_array = array();
+            $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
         
-        $this->DBUpdate($table_name, $toUpdate, $where_array);
+            $this->DBUpdate($table_name, $toUpdate, $where_array);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -352,7 +363,11 @@ class Database extends baseModel {
         $contentE = filter_var($contentE, FILTER_SANITIZE_STRING);
         $titleE = filter_var($titleE, FILTER_SANITIZE_STRING);
         
-        if ( (strlen($titleE) > 50)   ) {
+        if ( (trim($contentE) == "") || (trim($titleE) == "") ) {
+            return false;
+        }
+        
+        if ( (strlen($titleE) > 50) || (strlen($contentE) > 65535)   ) {
             return false;
         }
         
@@ -398,17 +413,40 @@ class Database extends baseModel {
     }
     
     /**
+     * Metoda, která zamítne příspěvek
+     * @param type $id
+     */
+    public function denyPost($id) {
+        if ($this->getPost($id) != null) {
+            $table_name = "prispevky";
+            $toUpdate = array("schvaleny" => "-1", "rec1" => "NULL", "rec2" => "NULL", "rec3" => "NULL");
+            $where_array = array();
+            $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
+        
+            $this->DBUpdate($table_name, $toUpdate, $where_array);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    /**
      * Metoda, která publikuje příspěvek.
      * 
      * @param type $id  id příspěvku
      */
     public function publishPost($id){
-        $table_name = "prispevky";
-        $toUpdate = array("schvaleny" => "1");
-        $where_array = array();
-        $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
+        if ($this->getPost($id) != null) {
+            $table_name = "prispevky";
+            $toUpdate = array("schvaleny" => "1");
+            $where_array = array();
+            $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
         
-        $this->DBUpdate($table_name, $toUpdate, $where_array);
+            $this->DBUpdate($table_name, $toUpdate, $where_array);
+            return true;
+        } else {
+            return false;
+        }
     }
     
     /**
@@ -417,12 +455,16 @@ class Database extends baseModel {
      * @param type $id  id příspěvku
      */
     public function deleteFile($id){
+        if ($this->getPost($id) == null) {
+            return false;
+        }
         $table_name = "prispevky";
         $toUpdate = array("file" => "NULL");
         $where_array = array();
         $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
         
         $this->DBUpdate($table_name, $toUpdate, $where_array);
+        return true;
     }
     
     /**
@@ -432,14 +474,19 @@ class Database extends baseModel {
      * @param type $filename název souboru s ikonkou
      */
     public function changeIcon($login, $filename){
+        if ($this->getUser($login) == null) {
+            return false;
+        }
         $table_name = "uzivatele";
         $toUpdate = array("ikonka" => "'$filename'");
         $where_array = array();
         $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
         
         $this->DBUpdate($table_name, $toUpdate, $where_array);
+        return true;
     }
     
+//TODO    
     /**
      * Metoda, která změní jméno uživatele.
      * 
@@ -448,13 +495,26 @@ class Database extends baseModel {
      */
     public function changeName($login, $name){
         $name = filter_var($name, FILTER_SANITIZE_STRING);
+        if (strlen($name) > 60) {
+            return false;
+        }
+        
+        if ($name == null) {
+            $toUpdate = array("jmeno" => "NULL");
+        } else {
+            $toUpdate = array("jmeno" => "'$name'");
+        }
+        if (trim($name) == null) {
+            $toUpdate = array("jmeno" => "NULL");
+        }
         
         $table_name = "uzivatele";
-        $toUpdate = array("jmeno" => "'$name'");
+        
         $where_array = array();
         $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
         
         $this->DBUpdate($table_name, $toUpdate, $where_array);
+        return true;
     }
     
     /**
@@ -473,14 +533,16 @@ class Database extends baseModel {
             
             $content = filter_var($content, FILTER_SANITIZE_STRING);
             $headline = filter_var($headline, FILTER_SANITIZE_STRING);
+            if ( (trim($content) == "") || (trim($headline) == null) ) {
+                return false;
+            }
         
             $table_name = "prispevky";
         
             if ($filename != null) {
-                $filenameE = str_replace("'","''",$filename);
-                $toUpdate = array("nazev" => "'$headline'", "obsah" => "'$content'", "file" => "'$filenameE'");
+                $toUpdate = array("nazev" => "'$headline'", "obsah" => "'$content'", "file" => "'$filename'", "schvaleny" => "0");
             } else {
-                $toUpdate = array("nazev" => "'$headline'", "obsah" => "'$content'");
+                $toUpdate = array("nazev" => "'$headline'", "obsah" => "'$content'", "schvaleny" => "0");
             }
             
             
@@ -517,6 +579,7 @@ class Database extends baseModel {
      */
     public function updateRec($recenzent, $postId, $num) {
         $table_name = "prispevky";
+        
         if ($recenzent != null) {
             $toUpdate = array("rec$num" => "'$recenzent'");
         } else {
@@ -545,8 +608,15 @@ class Database extends baseModel {
         
         if ($user != null) {
             $content = str_replace("'","''",$content);
-            
             $content = filter_var($content, FILTER_SANITIZE_STRING);
+            
+            if ( (trim($content) == "") ) {
+            return false;
+            }
+            
+            if (strlen($content) > 65535) {
+                return false;
+            }
             
             $item = array("autor" => "'$login'", "obsah" => "'$content'", "celkove" => "'$overview'", "jazyk" => "'$lang'", "originalita" => "'$orig'", "prispevek" => "'$idPost'",  "datum" => "CURRENT_DATE()");
         
@@ -570,11 +640,16 @@ class Database extends baseModel {
         
         $content = filter_var($content, FILTER_SANITIZE_STRING);
         
+        if (trim($content) == "") {
+            return false;
+        }
+        
         $toUpdate = array("obsah" => "'$content'", "celkove" => "$summary", "jazyk" => "$lang", "originalita" => "$orig");
         $where_array = array();
         $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
         
         $this->DBUpdate($table_name, $toUpdate, $where_array);
+        return true;
     }
     
     /**
