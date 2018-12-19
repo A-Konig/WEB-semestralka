@@ -3,8 +3,9 @@
 /*
  * Třída obstarávající interakci s databází 
  */
+
 class Database extends baseModel {
-        
+
     /**
      * Ověří správnost přihlašovacího jména a hesla
      * 
@@ -15,7 +16,7 @@ class Database extends baseModel {
     public function authorizeUser($login, $password) {
         $user = $this->getUser($login);
 
-        if (($user != null) && (password_verify($password, $user['heslo'])) ) {
+        if (($user != null) && (password_verify($password, $user['heslo']))) {
             return true;
         } else {
             return false;
@@ -31,11 +32,11 @@ class Database extends baseModel {
         $where_array = array();
         $order_by = array();
         $order_by[] = array("column" => "login", "sort" => "ASC");
-        
+
         $res = $this->DBSelectAll($table_name, "*", $where_array, $order_by);
-        
+
         $i = 0;
-        $users = array();        
+        $users = array();
         if ($res != null) {
             foreach ($res as $index) {
                 $index = $this->appendRight($index);
@@ -46,7 +47,7 @@ class Database extends baseModel {
 
         return $users;
     }
-    
+
     /**
      * Metoda, která získá blokované uživatele
      */
@@ -54,11 +55,11 @@ class Database extends baseModel {
         $table_name = "uzivatele";
         $where_array = array();
         $where_array[] = array("column" => "block", "symbol" => "=", "value" => '1');
-        
+
         $res = $this->DBSelectAll($table_name, "*", $where_array, array());
-        
+
         $i = 0;
-        $users = array();        
+        $users = array();
         if ($res != null) {
             foreach ($res as $index) {
                 $index = $this->appendRight($index);
@@ -69,7 +70,7 @@ class Database extends baseModel {
 
         return $users;
     }
-    
+
     /**
      * Metoda, která z databáze zjistí dostupné údaje o daném uživateli.
      * @params $login login uživatele
@@ -79,7 +80,7 @@ class Database extends baseModel {
         $table_name = "uzivatele";
         $where_array = array();
         $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
-        
+
         $users = $this->DBSelectOne($table_name, "*", $where_array);
         $user = $this->appendRight($users);
         return $user;
@@ -96,32 +97,32 @@ class Database extends baseModel {
      * @return boolean jestli operace proběhla nebo ne
      */
     public function createUser($jmeno, $login, $heslo, $email, $role) {
-        $jmenoE = str_replace("'","''",$jmeno);
-        $loginE = str_replace("'","''",$login);
-        $emailE = str_replace("'","''",$email);        
-        
+        $jmenoE = addslashes($jmeno);
+        $loginE = addslashes($login);
+        $emailE = addslashes($email);
+
         $email = filter_var($email, FILTER_SANITIZE_STRING);
         $login = filter_var($login, FILTER_SANITIZE_STRING);
         $jmenoE = filter_var($jmenoE, FILTER_SANITIZE_STRING);
-        
-        if ( ($login != $loginE) || ($emailE != $email) ) {
+
+        if (($login != $loginE) || ($emailE != $email)) {
             return false;
         }
-        if ( (strlen($login) > 20) || (strlen($jmeno) > 60) || (strlen($email) > 60)  ) {
+        if ((strlen($login) > 20) || (strlen($jmeno) > 60) || (strlen($email) > 60)) {
             return false;
         }
-        if ( (trim($login) == "") || (trim($login) != $login) || (trim($email)=="") ) {
+        if ((trim($login) == "") || (trim($login) != $login) || (trim($email) == "")) {
             return false;
         }
 
-        
+
         if ($this->getUser($login) == null) {
             $table_name = "uzivatele";
-            $passH = password_hash($heslo, PASSWORD_DEFAULT);        
+            $passH = password_hash($heslo, PASSWORD_DEFAULT);
             $item = array("login" => "'$login'", "jmeno" => "'$jmenoE'", "heslo" => "'$passH'", "email" => "'$email'", "role" => "$role");
-        
+
             $res = $this->DBInsert($table_name, $item);
-        
+
             if ($res != null) {
                 return true;
             } else {
@@ -141,34 +142,34 @@ class Database extends baseModel {
      */
     public function updateEmail($login, $email) {
         if ($this->getUser($login) != null) {
-            $emailE = str_replace("'","''",$email);
-            if ( ($emailE != $email) ) {
+            $emailE = addslashes($email);
+            if (($emailE != $email)) {
                 return false;
             }
-        
-            if ( (strlen($email) > 60)  ) {
+
+            if ((strlen($email) > 60)) {
                 return false;
             }
-            
+
             $email = filter_var($email, FILTER_SANITIZE_STRING);
-            
-            if ( (trim($email)=="") ) {
-            return false;
+
+            if ((trim($email) == "")) {
+                return false;
             }
-            
+
             $table_name = "uzivatele";
             $toUpdate = array("email" => "'$email'");
             $where_array = array();
             $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
-        
+
             $this->DBUpdate($table_name, $toUpdate, $where_array);
-            
+
             return true;
         } else {
             return false;
         }
     }
-    
+
     /**
      * Funkce co změní v databázi u daného uživatele heslo.
      * 
@@ -182,15 +183,15 @@ class Database extends baseModel {
             $toUpdate = array("heslo" => "'$passH'");
             $where_array = array();
             $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
-        
+
             $this->DBUpdate($table_name, $toUpdate, $where_array);
-        
+
             return true;
         } else {
             return false;
         }
     }
-    
+
     /**
      * Funkce, která zablokuje uživatele
      * 
@@ -203,14 +204,14 @@ class Database extends baseModel {
             $toUpdate = array("block" => "1");
             $where_array = array();
             $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
-        
+
             $this->DBUpdate($table_name, $toUpdate, $where_array);
             return true;
         } else {
             return false;
         }
     }
-    
+
     /**
      * Funkce, která odblokuje uživatele
      * 
@@ -218,19 +219,19 @@ class Database extends baseModel {
      * @return boolean informace jestli operace proběhla nebo ne
      */
     public function unblockUser($login) {
-        if ($this->getUser($login) != null ){
+        if ($this->getUser($login) != null) {
             $table_name = "uzivatele";
             $toUpdate = array("block" => "0");
             $where_array = array();
             $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
-        
+
             $this->DBUpdate($table_name, $toUpdate, $where_array);
             return true;
         } else {
             return false;
         }
     }
-    
+
     /**
      * Metoda, která smaže uživatele z databáze
      * 
@@ -275,12 +276,12 @@ class Database extends baseModel {
     public function allRights() {
         $table_name = "role";
         $where_array = array();
-        
+
         $rights = $this->DBSelectAll($table_name, "*", $where_array, array());
         return $rights;
     }
 
-    /** 
+    /**
      * Metoda která vrací infomace o daném přístupovém právu
      * 
      * @params id práva
@@ -290,15 +291,15 @@ class Database extends baseModel {
         $table_name = "role";
         $where_array = array();
         $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
-        
-        $right= $this->DBSelectOne($table_name, "*", $where_array);
+
+        $right = $this->DBSelectOne($table_name, "*", $where_array);
         if ($right != null) {
             return $right;
         } else {
             return null;
         }
     }
-    
+
     /**
      * Metoda, která změní přístupové právo zadanému uživateli.
      * 
@@ -311,7 +312,7 @@ class Database extends baseModel {
             $toUpdate = array("role" => "$rightId");
             $where_array = array();
             $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
-        
+
             $this->DBUpdate($table_name, $toUpdate, $where_array);
             return true;
         } else {
@@ -329,7 +330,7 @@ class Database extends baseModel {
         $where_array = array();
         $order_by = array();
         $order_by[] = array("column" => "datum", "sort" => "ASC");
-        
+
         $res = $this->DBSelectAll($table_name, "*", $where_array, $order_by);
         return $res;
     }
@@ -344,7 +345,7 @@ class Database extends baseModel {
         $table_name = "prispevky";
         $where_array = array();
         $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
-        
+
         $res = $this->DBSelectOne($table_name, "*", $where_array);
         return $res;
     }
@@ -360,38 +361,37 @@ class Database extends baseModel {
     public function addPost($login, $title, $content, $filename) {
         $user = $this->getUser($login);
         $table_name = "prispevky";
-        
-        $titleE = str_replace("'","''",$title); 
-        $contentE = str_replace("'","''",$content); 
-        
+
+        $titleE = addslashes($title);
+        $contentE = addslashes($content);
+
         $contentE = filter_var($contentE, FILTER_SANITIZE_STRING);
         $titleE = filter_var($titleE, FILTER_SANITIZE_STRING);
-        
-        if ( (trim($contentE) == "") || (trim($titleE) == "") ) {
+
+        if ((trim($contentE) == "") || (trim($titleE) == "")) {
             return false;
         }
-        
-        if ( (strlen($titleE) > 100) || (strlen($contentE) > 65535)   ) {
+
+        if ((strlen($titleE) > 100) || (strlen($contentE) > 65535)) {
             return false;
         }
-        
+
         if ($user != null) {
             $item = array("nazev" => "'$titleE'", "obsah" => "'$contentE'", "autor" => "'$login'", "datum" => "CURRENT_DATE()",
-                          "file" => "'$filename'");
-        
+                "file" => "'$filename'");
+
             $res = $this->DBInsert($table_name, $item);
-            
-            if ($res != null ) {
+
+            if ($res != null) {
                 return true;
             } else {
                 return false;
             }
-            
         } else {
             return false;
         }
     }
-    
+
     /**
      * Metoda, která smaže příspěvek z databáze.
      * 
@@ -403,9 +403,9 @@ class Database extends baseModel {
             $table_name = "prispevky";
             $where_array = array();
             $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
-            
+
             $this->DBDelete($table_name, $where_array, null);
-            
+
             if ($this->getPost($id) == null) {
                 return true;
             } else {
@@ -415,7 +415,7 @@ class Database extends baseModel {
             return false;
         }
     }
-    
+
     /**
      * Metoda, která zamítne příspěvek
      * @param type $id
@@ -426,39 +426,39 @@ class Database extends baseModel {
             $toUpdate = array("schvaleny" => "-1", "rec1" => "NULL", "rec2" => "NULL", "rec3" => "NULL");
             $where_array = array();
             $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
-        
+
             $this->DBUpdate($table_name, $toUpdate, $where_array);
             return true;
         } else {
             return false;
         }
     }
-    
+
     /**
      * Metoda, která publikuje příspěvek.
      * 
      * @param type $id  id příspěvku
      */
-    public function publishPost($id){
+    public function publishPost($id) {
         if ($this->getPost($id) != null) {
             $table_name = "prispevky";
             $toUpdate = array("schvaleny" => "1");
             $where_array = array();
             $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
-        
+
             $this->DBUpdate($table_name, $toUpdate, $where_array);
             return true;
         } else {
             return false;
         }
     }
-    
+
     /**
      * Metoda, která smaže file z příspěvku.
      * 
      * @param type $id  id příspěvku
      */
-    public function deleteFile($id){
+    public function deleteFile($id) {
         if ($this->getPost($id) == null) {
             return false;
         }
@@ -466,18 +466,18 @@ class Database extends baseModel {
         $toUpdate = array("file" => "NULL");
         $where_array = array();
         $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
-        
+
         $this->DBUpdate($table_name, $toUpdate, $where_array);
         return true;
     }
-    
+
     /**
      * Metoda, která změní ikonku uživatele.
      * 
      * @param type $login  loign uživatele
      * @param type $filename název souboru s ikonkou
      */
-    public function changeIcon($login, $filename){
+    public function changeIcon($login, $filename) {
         if ($this->getUser($login) == null) {
             return false;
         }
@@ -485,23 +485,25 @@ class Database extends baseModel {
         $toUpdate = array("ikonka" => "'$filename'");
         $where_array = array();
         $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
-        
+
         $this->DBUpdate($table_name, $toUpdate, $where_array);
         return true;
     }
-    
+
     /**
      * Metoda, která změní jméno uživatele.
      * 
      * @param type $login  loign uživatele
      * @param type $name jméno uživatele
      */
-    public function changeName($login, $name){
+    public function changeName($login, $name) {
+        $name = addslashes($name);
+        
         $name = filter_var($name, FILTER_SANITIZE_STRING);
         if (strlen($name) > 60) {
             return false;
         }
-        
+
         if ($name == null) {
             $toUpdate = array("jmeno" => "NULL");
         } else {
@@ -510,16 +512,16 @@ class Database extends baseModel {
         if (trim($name) == null) {
             $toUpdate = array("jmeno" => "NULL");
         }
-        
+
         $table_name = "uzivatele";
-        
+
         $where_array = array();
         $where_array[] = array("column" => "login", "symbol" => "=", "value" => $login);
-        
+
         $this->DBUpdate($table_name, $toUpdate, $where_array);
         return true;
     }
-    
+
     /**
      * Metoda, která upraví daný příspěvek v databázi.
      * 
@@ -530,39 +532,42 @@ class Database extends baseModel {
      */
     public function editPost($id, $headline, $content, $filename) {
         $post = $this->getPost($id);
-        
+
         if ($post != null) {
             $filenameE = "";
+
+            $content = addslashes($content);
+            $headline = addslashes($headline);
             
             $content = filter_var($content, FILTER_SANITIZE_STRING);
             $headline = filter_var($headline, FILTER_SANITIZE_STRING);
-            if ( (trim($content) == "") || (trim($headline) == "") ) {
+            if ((trim($content) == "") || (trim($headline) == "")) {
                 return false;
             }
-        
-            if ( (strlen($headline) > 100) || (strlen($content) > 65535)   ) {
+
+            if ((strlen($headline) > 100) || (strlen($content) > 65535)) {
                 return false;
             }
-        
+
             $table_name = "prispevky";
-        
+
             if ($filename != null) {
                 $toUpdate = array("nazev" => "'$headline'", "obsah" => "'$content'", "file" => "'$filename'", "schvaleny" => "0");
             } else {
                 $toUpdate = array("nazev" => "'$headline'", "obsah" => "'$content'", "schvaleny" => "0");
             }
-            
-            
+
+
             $where_array = array();
             $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
-        
+
             $this->DBUpdate($table_name, $toUpdate, $where_array);
             return true;
         } else {
             return false;
         }
     }
-    
+
     /**
      * Metoda, která vybere všechny recenze z databáze
      * 
@@ -571,12 +576,12 @@ class Database extends baseModel {
     public function allRecs() {
         $table_name = "hodnoceni";
         $where_array = array();
-        
+
         $res = $this->DBSelectAll($table_name, "*", $where_array, array());
-        
+
         return $res;
     }
-    
+
     /**
      * Metoda, která nastaví recenzenta číslo $num na novou hodnotu
      * 
@@ -589,10 +594,10 @@ class Database extends baseModel {
         $toUpdate = array("rec1" => "'$rec1'", "rec2" => "'$rec2'", "rec3" => "'$rec3'");
         $where_array = array();
         $where_array[] = array("column" => "id", "symbol" => "=", "value" => $idPost);
-        
+
         $this->DBUpdate($table_name, $toUpdate, $where_array);
     }
-    
+
     /**
      * Metoda, která nastaví v databázi recenzi pole indikující, že hodnocení není aktuální.
      * 
@@ -603,11 +608,10 @@ class Database extends baseModel {
         $where_array = array();
         $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
         $toUpdate = array("aktualni" => "0");
-        
+
         $this->DBUpdate($table_name, $toUpdate, $where_array);
-        
     }
-    
+
     /**
      * Metoda, která přidá novou recenzi do databáze
      * 
@@ -622,28 +626,29 @@ class Database extends baseModel {
     public function addRec($login, $content, $lang, $orig, $overview, $idPost) {
         $user = $this->getUser($login);
         $table_name = "hodnoceni";
-        
+
         if ($user != null) {
-            $content = str_replace("'","''",$content);
+            
+            $content = addslashes($content);
             $content = filter_var($content, FILTER_SANITIZE_STRING);
-            
-            if ( (trim($content) == "") ) {
-            return false;
+
+            if ((trim($content) == "")) {
+                return false;
             }
-            
+
             if (strlen($content) > 65535) {
                 return false;
             }
-            
-            $item = array("autor" => "'$login'", "obsah" => "'$content'", "celkove" => "'$overview'", "jazyk" => "'$lang'", "originalita" => "'$orig'", "prispevek" => "'$idPost'",  "datum" => "CURRENT_DATE()", "aktualni" => 1);
-        
+
+            $item = array("autor" => "'$login'", "obsah" => "'$content'", "celkove" => "'$overview'", "jazyk" => "'$lang'", "originalita" => "'$orig'", "prispevek" => "'$idPost'", "datum" => "CURRENT_DATE()", "aktualni" => 1);
+
             $this->DBInsert($table_name, $item);
             return true;
         } else {
             return false;
         }
     }
-    
+
     /**
      * 
      * @param type $id
@@ -654,21 +659,22 @@ class Database extends baseModel {
      */
     public function editRec($id, $content, $summary, $lang, $orig) {
         $table_name = "hodnoceni";
-        
+
+        $content = addslashes($content);
         $content = filter_var($content, FILTER_SANITIZE_STRING);
-        
+
         if (trim($content) == "") {
             return false;
         }
-        
+
         $toUpdate = array("obsah" => "'$content'", "celkove" => "$summary", "jazyk" => "$lang", "originalita" => "$orig", "aktualni" => 1);
         $where_array = array();
         $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
-        
+
         $this->DBUpdate($table_name, $toUpdate, $where_array);
         return true;
     }
-    
+
     /**
      * Metoda, která načte všechny recenzenze k zadanému příspěvku v databázi
      * 
@@ -682,12 +688,12 @@ class Database extends baseModel {
             $where_array[] = array("column" => "prispevek", "symbol" => "=", "value" => $idPost);
             $order_by = array();
             $order_by[] = array("column" => "datum", "sort" => "ASC");
-        
+
             $res = $this->DBSelectAll($table_name, "*", $where_array, $order_by);
             return $res;
         }
     }
-    
+
     /**
      * Metoda, která vrací informace o jedné konkrétní recenzi
      * 
@@ -698,11 +704,11 @@ class Database extends baseModel {
         $table_name = "hodnoceni";
         $where_array = array();
         $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
-        
+
         $res = $this->DBSelectOne($table_name, "*", $where_array);
         return $res;
     }
-    
+
     /**
      * Metoda, která smaže danou recenzi
      * 

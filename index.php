@@ -80,5 +80,5 @@ if (file_exists($filename_ctrl) && !is_dir($filename_ctrl)) {
     $ctrl_name = "errorController";
     include_once("controllers/errorController.php");
 }  
-    $$ctrl_name = new $ctrl_name($twig);
-    $$ctrl_name->indexAction($params);
+$$ctrl_name = new $ctrl_name($twig);
+$$ctrl_name->indexAction($params);
