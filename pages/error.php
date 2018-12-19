@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Stránka reprezentující 404 error. Na tuto stránku je uživatel přesměrován pokud ta, kterou hledal neexistuje.
+ * 
+ */
 
 echo '<div class="container">';
 

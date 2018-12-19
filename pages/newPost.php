@@ -1,7 +1,13 @@
 <?php
 
+/**
+ * Stránka přístupná uživatelům s přístupovými právy autora.
+ * Z této stránky je možné vytvořit nový příspěvek a přiložit k němu soubor.
+ */
+
 echo '<div class="page">';
 
+//výpisy výsledku odeslání formuláře
 if (isset($params["error"])) {
     echo '<div class="alert alert-danger alert-dismissible">
                 <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
@@ -20,10 +26,9 @@ if (isset($params["message"])) {
 //pro přihlášené uživatele
 if ($user != null) {
     if ($user['roleData']['id'] == '3') {
-        ?>
-        <h2>Nový příspěvek:</h2>
-
         
+    echo' <h2>Nový příspěvek:</h2>
+
         <form class="form-horizontal" action="" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                     <label class="control-label col-sm-2" for="headline">Nadpis:</label>
@@ -52,9 +57,8 @@ if ($user != null) {
                         <input class="btn" type="submit" name="submit" value="Publikovat">
                     </div>
                 </div>
-         </form>
+         </form>';
     
-    <?php    
     } else {
         echo '<h2><span class="glyphicon glyphicon-remove"></span> Nedostatečné oprávnění </h2>';
     }

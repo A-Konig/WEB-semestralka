@@ -8,17 +8,17 @@ include_once("model/postProcessor.class.php");
 include("model/user.class.php");
 include("model/database.class.php");
 
+//vytvoření objektů
 $login = new User;
 $db = new Database;
 $db->Connect();
 
 $params = array();
 $menu = array();
-$pg = array();
 
 //twig
 require_once __DIR__ . '/vendor/autoload.php';
-$loader = new Twig_Loader_Filesystem('sablony');
+$loader = new Twig_Loader_Filesystem('templates');
 $twig = new Twig_Environment($loader);
 
 //změna stránky

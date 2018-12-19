@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Stránka obsahující podmínky, se kterými musí uživatel souhlasit při registraci.
+ */
+
 echo '<div class="container-fluid">';
 
 echo '<h2>Lorem ipsum dolor sit amet</h2>';

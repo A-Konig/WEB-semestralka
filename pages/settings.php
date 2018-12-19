@@ -1,11 +1,16 @@
 <?php
 
+/**
+ * Stránka s možnostmi nastavení uživatelského účtu.
+ * Uživatel může změnit svou ikonku, jméno, heslo a e-mail.
+ */
 echo '<div class="container-fluid">';
 
+//výpisy výsledku odeslání formuláře
 if (isset($params["error"])) {
     echo '<div class="alert alert-danger alert-dismissible">
                 <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                <strong>Chyba!</strong> '.$params["error"].'
+                <strong>Chyba!</strong> ' . $params["error"] . '
           </div>';
     unset($params["error"]);
 }
@@ -17,50 +22,52 @@ if (isset($params["message"])) {
     unset($params["message"]);
 }
 
+//pro přihlášené uživatele
 if ($user != null) {
-echo '<h3>Nastavení</h3>';
+    echo '<h3>Nastavení</h3>';
 
 
-echo '
+    echo '
     <div class="row">
     <div class="col-sm-3">';
 
-$file= 'img/'.$user['ikonka'];
+    //zobrazení ikonky
+    $file = 'img/' . $user['ikonka'];
 
-if (file_exists($file)) {
-    echo '<img src="img/'.$user['ikonka'].'" class="imgEd">';
-} else {
-    echo '<img src="img/empty.png" class="imgEd">';
-}
+    if (file_exists($file)) {
+        echo '<img src="img/' . $user['ikonka'] . '" class="imgEd">';
+    } else {
+        echo '<img src="img/empty.png" class="imgEd">';
+    }
 
-
-
-echo
+    //zobrazení informací
+    echo
     '</div>
     <div class="col-sm-3">
     <table class="table">
         <tbody>
             <tr>
                 <td>Login</td>
-                <td>'.$user['login'].'</td>
+                <td>' . $user['login'] . '</td>
             </tr>
             <tr>
                 <td>Jméno</td>
-                <td>'.$user['jmeno'].'</td>
+                <td>' . $user['jmeno'] . '</td>
             </tr>
             <tr>
                 <td>Email</td>
-                <td>'.$user['email'].'</td>
+                <td>' . $user['email'] . '</td>
             </tr>
             <tr> <td></td> <td></td> </tr>
         </tbody>
     </table>
     </div>
     </div>
-        ';    
+        ';
 
-echo '<h4>Změna ikonky</h4>';
-echo '
+    //změna ikonky
+    echo '<h4>Změna ikonky</h4>';
+    echo '
     <div class="row">
     <form class="form-horizontal" action="" method="POST" enctype="multipart/form-data">
         <div class="form-group">
@@ -80,7 +87,8 @@ echo '
     </div>
      ';
 
-echo '<h4>Změna jména</h4>';
+    //změna jména
+    echo '<h4>Změna jména</h4>';
     echo '<form class="form-horizontal" action="" method="POST">
                 <div class="form-group">
                     <label class="control-label col-sm-2" for="name">Nové jméno:</label>
@@ -97,7 +105,8 @@ echo '<h4>Změna jména</h4>';
             </form>';
 
 
-echo '<h4>Změna hesla</h4>';
+    //změna hesla
+    echo '<h4>Změna hesla</h4>';
     echo '<form class="form-horizontal" action="" method="POST">
                 <div class="form-group">
                     <label class="control-label col-sm-2" for="pas1">Staré heslo:</label>
@@ -119,8 +128,9 @@ echo '<h4>Změna hesla</h4>';
                 </div>
             </form>';
 
-echo '<h4>Změna e-mailu</h4>';
-echo '<form class="form-horizontal" action="" method="POST">
+    //změna emailu
+    echo '<h4>Změna e-mailu</h4>';
+    echo '<form class="form-horizontal" action="" method="POST">
                 <div class="form-group">
                     <label class="control-label col-sm-2" for="email">Nový e-mail:</label>
                     <div class="col-sm-3">
@@ -141,6 +151,7 @@ echo '<form class="form-horizontal" action="" method="POST">
                 </div>
             </form>';
 
+//pro nepřihlášené uživatele    
 } else {
     echo 'Tato stránka je pouze pro přihlášené uživatele<br>';
     echo '<a href="index.php?page=login"><button type="button" class="btn">Login</button></a>';

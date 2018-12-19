@@ -1,7 +1,13 @@
 <?php
 
+/**
+ * Stránka pro registraci nového uživatele.
+ * Po registraci je uživatel automaticky přihlášen a přesměrován na domovskou stránku.
+ */
+
 echo '<div class="container-fluid">';
 
+// výpisy výsledku odeslání formuláře
 if (isset($params["error"])) {
     echo '<div class="alert alert-danger alert-dismissible">
                 <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
@@ -34,7 +40,7 @@ if ($params["user"] != null) {
     
     echo '<form class="form-horizontal" action="" method="POST">
                 <div class="form-group">
-                    <label class="control-label col-sm-2" for="name">Login*:</label>
+                    <label class="control-label col-sm-2" for="name">Login * :</label>
                     <div class="col-sm-3">
                        <input type="text" class="form-control" name="login" placeholder="Uživatelské jméno" required>
                     </div>
@@ -46,13 +52,13 @@ if ($params["user"] != null) {
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="control-label col-sm-2" for="name">Email*:</label>
+                    <label class="control-label col-sm-2" for="name">Email * :</label>
                     <div class="col-sm-3">
                        <input type="email" class="form-control" name="email" placeholder="E-mail" required>
                     </div>
                 </div>                
                 <div class="form-group">
-                    <label class="control-label col-sm-2" for="password">Heslo*:</label>
+                    <label class="control-label col-sm-2" for="password">Heslo * :</label>
                     <div class="col-sm-3"> 
                         <input type="password" class="form-control" name="password" placeholder="Heslo" required>
                     </div>
@@ -70,24 +76,15 @@ if ($params["user"] != null) {
                         <input class="btn" type="submit" name="submit" value="Registrovat">
                     </div>
                 </div>
+                </div>
+                    <div class="form-group"> 
+                        <div class="col-sm-offset-2 col-sm-10">
+                           * povinná položka
+                    </div>
+                </div>
+                
          </form>';  
-    echo '<span style="color:red">*</span><span> povinná položka</span><br>';
-
-/*    
-    echo '<form class = "submit" action="" method="POST" >';
-    
-    echo '<span class="formHead">Login<span style="color:red">*</span>:</span> <input type="text" name="login" required><br>';
-    echo '<span class="formHead">Jméno:</span> <input type="text" name="name"><br>';
-    echo '<span class="formHead">E-mail<span style="color:red">*</span>:</span> <input type="email" name="email" required><br>';
-    echo '<span class="formHead">Heslo<span style="color:red">*</span>:</span> <input type="password" name="password" required><br>';
-    
-    echo '<input type="checkbox" name="agree" required> <span style="color:red">*</span> I have read and understood <a href="index.php?page=terms">The terms and conditions</a><br>';
-
-    echo '<br>';
-    echo '<input type="hidden" name="log" value="register">';
-    echo '<input class="inputButton" type="submit" name="submit" value="Registrovat">';
-    echo '</form>';
-*/
+    echo '';
 }
 
 echo '</div>';

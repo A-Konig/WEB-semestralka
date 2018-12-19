@@ -104,7 +104,7 @@ class baseModel {
      * @param array			$order_by_array - pouze pole stringu: [0] => {[column] = "", [sort] => "DESC"}
      * @return mixed
      */
-    public function DBSelectAll($table_name, $select_columns_string, $where_array, $limit_string = "", $order_by_array = array())
+    public function DBSelectAll($table_name, $select_columns_string, $where_array, $order_by_array, $limit_string = "")
     {
         // PDO - MySQL
         // vznik chyby v PDO
@@ -213,6 +213,7 @@ class baseModel {
         }
         // 1) pripravit dotaz s dotaznikama
         $query = "insert into `$table_name` ($insert_columns) values ($insert_values);";
+        //echo $query;
         // 2) pripravit si statement
         $statement = $this->connection->prepare($query);
         // 3) NAVAZAT HODNOTY k otaznikum dle poradi od 1

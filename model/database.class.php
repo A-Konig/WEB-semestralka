@@ -29,8 +29,10 @@ class Database extends baseModel {
     public function allUsers() {
         $table_name = "uzivatele";
         $where_array = array();
+        $order_by = array();
+        $order_by[] = array("column" => "login", "sort" => "ASC");
         
-        $res = $this->DBSelectAll($table_name, "*", $where_array);
+        $res = $this->DBSelectAll($table_name, "*", $where_array, $order_by);
         
         $i = 0;
         $users = array();        
@@ -53,7 +55,7 @@ class Database extends baseModel {
         $where_array = array();
         $where_array[] = array("column" => "block", "symbol" => "=", "value" => '1');
         
-        $res = $this->DBSelectAll($table_name, "*", $where_array);
+        $res = $this->DBSelectAll($table_name, "*", $where_array, array());
         
         $i = 0;
         $users = array();        
@@ -274,7 +276,7 @@ class Database extends baseModel {
         $table_name = "role";
         $where_array = array();
         
-        $rights = $this->DBSelectAll($table_name, "*", $where_array);
+        $rights = $this->DBSelectAll($table_name, "*", $where_array, array());
         return $rights;
     }
 
@@ -325,8 +327,10 @@ class Database extends baseModel {
     public function allPosts() {
         $table_name = "prispevky";
         $where_array = array();
+        $order_by = array();
+        $order_by[] = array("column" => "datum", "sort" => "ASC");
         
-        $res = $this->DBSelectAll($table_name, "*", $where_array);
+        $res = $this->DBSelectAll($table_name, "*", $where_array, $order_by);
         return $res;
     }
 
@@ -367,7 +371,7 @@ class Database extends baseModel {
             return false;
         }
         
-        if ( (strlen($titleE) > 50) || (strlen($contentE) > 65535)   ) {
+        if ( (strlen($titleE) > 100) || (strlen($contentE) > 65535)   ) {
             return false;
         }
         
@@ -486,7 +490,6 @@ class Database extends baseModel {
         return true;
     }
     
-//TODO    
     /**
      * Metoda, která změní jméno uživatele.
      * 
@@ -533,7 +536,11 @@ class Database extends baseModel {
             
             $content = filter_var($content, FILTER_SANITIZE_STRING);
             $headline = filter_var($headline, FILTER_SANITIZE_STRING);
-            if ( (trim($content) == "") || (trim($headline) == null) ) {
+            if ( (trim($content) == "") || (trim($headline) == "") ) {
+                return false;
+            }
+        
+            if ( (strlen($headline) > 100) || (strlen($content) > 65535)   ) {
                 return false;
             }
         
@@ -565,7 +572,7 @@ class Database extends baseModel {
         $table_name = "hodnoceni";
         $where_array = array();
         
-        $res = $this->DBSelectAll($table_name, "*", $where_array);
+        $res = $this->DBSelectAll($table_name, "*", $where_array, array());
         
         return $res;
     }
@@ -577,18 +584,28 @@ class Database extends baseModel {
      * @param type $postId  id příspěvku
      * @param type $num číslo recenzenta
      */
-    public function updateRec($recenzent, $postId, $num) {
+    public function updateRec($idPost, $rec1, $rec2, $rec3) {
         $table_name = "prispevky";
-        
-        if ($recenzent != null) {
-            $toUpdate = array("rec$num" => "'$recenzent'");
-        } else {
-            $toUpdate = array("rec$num" => "NULL");
-        }
+        $toUpdate = array("rec1" => "'$rec1'", "rec2" => "'$rec2'", "rec3" => "'$rec3'");
         $where_array = array();
-        $where_array[] = array("column" => "id", "symbol" => "=", "value" => $postId);
+        $where_array[] = array("column" => "id", "symbol" => "=", "value" => $idPost);
         
         $this->DBUpdate($table_name, $toUpdate, $where_array);
+    }
+    
+    /**
+     * Metoda, která nastaví v databázi recenzi pole indikující, že hodnocení není aktuální.
+     * 
+     * @param type $id
+     */
+    public function notUpToDate($id) {
+        $table_name = "hodnoceni";
+        $where_array = array();
+        $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
+        $toUpdate = array("aktualni" => "0");
+        
+        $this->DBUpdate($table_name, $toUpdate, $where_array);
+        
     }
     
     /**
@@ -618,7 +635,7 @@ class Database extends baseModel {
                 return false;
             }
             
-            $item = array("autor" => "'$login'", "obsah" => "'$content'", "celkove" => "'$overview'", "jazyk" => "'$lang'", "originalita" => "'$orig'", "prispevek" => "'$idPost'",  "datum" => "CURRENT_DATE()");
+            $item = array("autor" => "'$login'", "obsah" => "'$content'", "celkove" => "'$overview'", "jazyk" => "'$lang'", "originalita" => "'$orig'", "prispevek" => "'$idPost'",  "datum" => "CURRENT_DATE()", "aktualni" => 1);
         
             $this->DBInsert($table_name, $item);
             return true;
@@ -644,7 +661,7 @@ class Database extends baseModel {
             return false;
         }
         
-        $toUpdate = array("obsah" => "'$content'", "celkove" => "$summary", "jazyk" => "$lang", "originalita" => "$orig");
+        $toUpdate = array("obsah" => "'$content'", "celkove" => "$summary", "jazyk" => "$lang", "originalita" => "$orig", "aktualni" => 1);
         $where_array = array();
         $where_array[] = array("column" => "id", "symbol" => "=", "value" => $id);
         
@@ -663,8 +680,10 @@ class Database extends baseModel {
             $table_name = "hodnoceni";
             $where_array = array();
             $where_array[] = array("column" => "prispevek", "symbol" => "=", "value" => $idPost);
+            $order_by = array();
+            $order_by[] = array("column" => "datum", "sort" => "ASC");
         
-            $res = $this->DBSelectAll($table_name, "*", $where_array);
+            $res = $this->DBSelectAll($table_name, "*", $where_array, $order_by);
             return $res;
         }
     }

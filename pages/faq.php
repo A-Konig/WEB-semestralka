@@ -1,4 +1,8 @@
 <?php
+/**
+ * Stránka s FAQ.
+ */
+
 echo '<div class="container-fluid">';
 
 

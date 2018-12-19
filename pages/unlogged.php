@@ -1,13 +1,17 @@
 <?php
 
+/**
+ * Header obsahující informacae o uživateli a odkaz na odhlíšení a stránku s nastavením.
+ * Pro nepřihlášené uživatele nabízi možnosti registrace a přihlášení
+ */
 
+//přihlášení
 if ($user != null) {
     echo '
         <nav class="navbar navbar-inverse">
             <div class="container-fluid">
                 <ul class="nav navbar-nav">
                     <li class=""><a>';
-    
     echo $user["login"].'</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
@@ -24,7 +28,8 @@ if ($user != null) {
             </div>
         </nav>
     ';
-    
+   
+//nepřihlášení    
 } else {
     echo '
         <nav class="navbar navbar-inverse">

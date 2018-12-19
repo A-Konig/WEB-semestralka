@@ -25,6 +25,11 @@ function phpWrapperFromFile($filename, $params = array()) {
     return $obsah;
 }
 
+/**
+ * Vypíše array
+ * 
+ * @param type $array
+ */
 function printr($array) {
     echo "<hr/><pre>";
     print_r($array);

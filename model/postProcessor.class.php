@@ -2,10 +2,8 @@
 
 /*
  * Třída obsahující metody obsluhující $_POST
- * 
  */
 class PostProcessor {
-    
     private $post;
     private $db;
     private $login;
@@ -24,9 +22,9 @@ class PostProcessor {
     }
 
     /**
-     * Základní metoda zpracující $_POST
+     * Základní metoda zpracující $_POST, podle hodnot v něm nastavených volá další metody.
      * 
-     * @return type array obsahující výsledky zpracování: "message" => "zpráva o úspěchu", "error" => "zpráva o neúspěchu"
+     * @return array obsahující výsledky zpracování: "message" => "zpráva o úspěchu", "error" => "zpráva o neúspěchu"
      */
     function doPost() {
 
@@ -34,19 +32,19 @@ class PostProcessor {
 
             //uživatel    
             if ((isset($this->post["log"]))) {
-                return $this->doUser($this->post, $this->db, $this->login);
+                return $this->doUser();
 
             //příspěvek        
             } else if ((isset($this->post["post"]))) {
-                return $this->doArticle($this->post, $this->db, $this->login);
+                return $this->doArticle();
 
             //recenze        
             } else if ((isset($this->post["rec"]))) {
-                return $this->doRec($this->post, $this->db, $this->login);
+                return $this->doRec();
 
             //soubor        
             } else if ((isset($this->post["file"]))) {
-                return $this->doFile($this->post, $this->db, $this->login);
+                return $this->doFile();
 
             //nic    
             } else {
@@ -58,17 +56,14 @@ class PostProcessor {
     /**
      * Metoda, obsluhující formuláře, související s uživatelem
      * 
-     * @param type $post
-     * @param type $db
-     * @param type $login
-     * @return array
+     * @return array obsahující výsledky zpracování: "message" => "zpráva o úspěchu", "error" => "zpráva o neúspěchu"
      */
-    private function doUser($post, $db, $login) {
+    private function doUser() {
         $params = array();
         //login    
-        if ($post["log"] == "login") {
-            if ($db->authorizeUser($post["name"], $post["password"])) {
-                $toLog = $db->getUser($post["name"]);
+        if ($this->post["log"] == "login") {
+            if ($this->db->authorizeUser($this->post["name"], $this->post["password"])) {
+                $toLog = $this->db->getUser($this->post["name"]);
 
                 //není user zablokován?
                 $blocked = false;
@@ -77,9 +72,9 @@ class PostProcessor {
                 }
 
                 if ($blocked == false) {
-                    $login->login($post["name"]);
-                    $logged = $login->getLogged();
-                    $params["user"] = $db->getUser($post["name"]);
+                    $this->login->login($this->post["name"]);
+                    $logged = $this->login->getLogged();
+                    $params["user"] = $this->db->getUser($this->post["name"]);
                     header("Location: /index.php?page=home");
                 } else {
                     $params["error"] = "Váš účet byl zablokován";
@@ -88,18 +83,20 @@ class PostProcessor {
                 $params["error"] = "Přihlášení se nezdařilo";
             }
             return $params;
-        } else if ($post["log"] == "logout") {
-            $login->logout();
+         
+           //odhlášení 
+        } else if ($this->post["log"] == "logout") {
+            $this->login->logout();
             header("Location: /index.php?page=logoutPage");
             return $params;
 
             //registrace
-        } else if ($post["log"] == "register") {
-            $res = $db->createUser($post["name"], $post["login"], $post["password"], $post["email"], 3);
+        } else if ($this->post["log"] == "register") {
+            $res = $this->db->createUser($this->post["name"], $this->post["login"], $this->post["password"], $this->post["email"], 3);
             if ($res) {
-                $login->login($post["login"]);
-                $logged = $login->getLogged();
-                $params["user"] = $db->getUser($post["login"]);
+                $this->login->login($this->post["login"]);
+                $logged = $this->login->getLogged();
+                $params["user"] = $this->db->getUser($this->post["login"]);
                 header("Location: /index.php?page=home");
             } else {
                 $params["error"] = "Registrace se nezdařila";
@@ -107,8 +104,8 @@ class PostProcessor {
             return $params;
 
             //smazání uživatele
-        } else if ($post["log"] == "delete") {
-            $res = $db->deleteUser($post["loginUser"]);
+        } else if ($this->post["log"] == "delete") {
+            $res = $this->db->deleteUser($this->post["loginUser"]);
             if (!$res) {
                 $params["error"] = "Smazání uživatele se nezdařilo";
             } else {
@@ -116,22 +113,22 @@ class PostProcessor {
             }
             return $params;
             //zablokování
-        } else if ($post["log"] == "block") {
-            $db->blockUser($post["loginUser"]);
-            $params["message"] = "Uživatel " . $post["loginUser"] . " zablokován";
+        } else if ($this->post["log"] == "block") {
+            $this->db->blockUser($this->post["loginUser"]);
+            $params["message"] = "Uživatel " . $this->post["loginUser"] . " zablokován";
             return $params;
 
             //odblokování
-        } else if ($post["log"] == "unblock") {
-            $db->unblockUser($post["loginUser"]);
-            $params["message"] = "Uživatel " . $post["loginUser"] . " odblokován";
+        } else if ($this->post["log"] == "unblock") {
+            $this->db->unblockUser($this->post["loginUser"]);
+            $params["message"] = "Uživatel " . $this->post["loginUser"] . " odblokován";
             return $params;
 
             //změna e-mailu    
-        } else if ($post["log"] == "changeMail") {
-            $user = $login->getLogged();
-            if ($db->authorizeUser($user['name'], $post["password"])) {
-                $res = $db->updateEmail($user['name'], $post['email']);
+        } else if ($this->post["log"] == "changeMail") {
+            $user = $this->login->getLogged();
+            if ($this->db->authorizeUser($user['name'], $this->post["password"])) {
+                $res = $this->db->updateEmail($user['name'], $this->post['email']);
                 if ($res) {
                     $params["message"] = "Změna e-mailu provedena";
                 } else {
@@ -143,10 +140,10 @@ class PostProcessor {
             return $params;
 
             //změna hesla        
-        } else if ($post["log"] == "changePass") {
-            $user = $login->getLogged();
-            if ($db->authorizeUser($user['name'], $post["pass1"])) {
-                $db->updatePassword($user['name'], $post['pass2']);
+        } else if ($this->post["log"] == "changePass") {
+            $user = $this->login->getLogged();
+            if ($this->db->authorizeUser($user['name'], $this->post["pass1"])) {
+                $this->db->updatePassword($user['name'], $this->post['pass2']);
                 $params["message"] = "Změna hesla provedena";
             } else {
                 $params["error"] = "Špatné heslo";
@@ -154,9 +151,9 @@ class PostProcessor {
             return $params;
 
             //změna jména        
-        } else if ($post["log"] == "changeName") {
-            $log = $login->getLogged();
-            $res = $db->changeName($log['name'], $post["name"]);
+        } else if ($this->post["log"] == "changeName") {
+            $log = $this->login->getLogged();
+            $res = $this->db->changeName($log['name'], $this->post["name"]);
             if ($res) {
                 $params["message"] = "Změna jména provedena";
             } else {
@@ -165,10 +162,10 @@ class PostProcessor {
             return $params;
 
             //změna role        
-        } else if ($post["log"] == "setRight") {
-            $res = $db->updateRight($post["login"], $post["right"]);
+        } else if ($this->post["log"] == "setRight") {
+            $res = $this->db->updateRight($this->post["login"], $this->post["right"]);
             if ($res == true) {
-                $params["message"] = "Role uživatele " . $post["login"] . " změněna";
+                $params["message"] = "Role uživatele " . $this->post["login"] . " změněna";
             } else {
                 $params["error"] = "Role se nepodařila změnit";
             }
@@ -179,16 +176,13 @@ class PostProcessor {
      /**
      * Metoda, obsluhující formuláře, související s příspěvky
      * 
-     * @param type $post
-     * @param type $db
-     * @param type $login
-     * @return array
+     * @return array obsahující výsledky zpracování: "message" => "zpráva o úspěchu", "error" => "zpráva o neúspěchu"
      */
-    private function doArticle($post, $db, $login) {
+    private function doArticle() {
         $params = array();
         //nový příspěvek   
-        if ($post["post"] == "newPost") {
-            $author = $login->getLogged();
+        if ($this->post["post"] == "newPost") {
+            $author = $this->login->getLogged();
             $params["error"] = null;
 
             $fileName = null;
@@ -225,7 +219,7 @@ class PostProcessor {
                 $params["error"] = $fileError;
             }
 
-            $res = $db->addPost($author["name"], $post["headline"], $post["content"], $fileName);
+            $res = $this->db->addPost($author["name"], $this->post["headline"], $this->post["content"], $fileName);
             if (!$res) {
                 $params["error"] .= "Přidání příspěvku se nezdařilo";
             } else {
@@ -234,8 +228,8 @@ class PostProcessor {
             return $params;
 
             //schválit příspěvek
-        } else if ($post["post"] == "publish") {
-            $res = $db->publishPost($post["idPost"]);
+        } else if ($this->post["post"] == "publish") {
+            $res = $this->db->publishPost($this->post["idPost"]);
 
             if ($res == true) {
                 $params["message"] = "Příspěvek byl publikován";
@@ -245,12 +239,12 @@ class PostProcessor {
             return $params;
 
             //upravit příspěvek        
-        } else if ($post["post"] == "edit") {
+        } else if ($this->post["post"] == "edit") {
             $fileName = null;
             $ok = 0;
             if (isset($_FILES["file"])) {
                 if ($_FILES["file"]["name"] != null) {
-                    $author = $login->getLogged();
+                    $author = $this->login->getLogged();
                     $fileType = strtolower(pathinfo($_FILES["file"]["name"], PATHINFO_EXTENSION));
 
                     if ($fileType == "pdf") {
@@ -281,38 +275,45 @@ class PostProcessor {
                 $params["error"] = $fileError;
             }
 
-            $res = $db->editPost($post["idPost"], $post["headline"], $post["content"], $fileName);
+            $res = $this->db->editPost($this->post["idPost"], $this->post["headline"], $this->post["content"], $fileName);
             if ($res == true) {
                 $params["message"] = "Příspěvek byl upraven";
+                
+                $recs = $this->db->getRecs($this->post["idPost"]);
+                if ($recs != null) {
+                    foreach ($recs as $rec) {
+                        if ($this->db->getOneRec($rec['id']) != null) {
+                            $this->db->notUpToDate($rec['id']);
+                        }
+                    }
+                }
             } else {
                 $params["error"] = "Editace příspěvku se nezdařila";
             }
             return $params;
 
             //smazat příspěvek
-        } else if ($post["post"] == "delete") {
-            $recs = $db->getRecs($post["idPost"]);
+        } else if ($this->post["post"] == "delete") {
 
-            foreach ($recs as $rec) {
-                $db->deleteRec($rec['id']);
-            }
-
-            $res = $db->deletePost($post["idPost"]);
+            $res = $this->db->deletePost($this->post["idPost"]);
             if (!$res) {
                 $params["error"] = "Smazání příspěvku se nezdařilo";
             } else {
                 $params["message"] = "Příspěvek byl smazán";
+            
+                $recs = $this->db->getRecs($this->post["idPost"]);
+                if ($recs != null) {
+                    foreach ($recs as $rec) {
+                        $this->db->deleteRec($rec['id']);
+                    }
+                }
             }
             return $params;
 
             //zamítnout příspěvek
-        } else if ($post["post"] == "deny") {
-            $res = $db->denyPost($post["idPost"]);
-            $recs = $db->getRecs($post["idPost"]);
-
-            foreach ($recs as $rec) {
-                $db->deleteRec($rec['id']);
-            }
+        } else if ($this->post["post"] == "deny") {
+            $res = $this->db->denyPost($this->post["idPost"]);
+            
             if (!$res) {
                 $params["error"] = "Zamítnutí příspěvku se nezdařilo";
             } else {
@@ -321,10 +322,10 @@ class PostProcessor {
             return $params;
 
             //přiřazení recenzenta
-        } else if ($post["post"] == "setRec") {
-            $user = $db->getUser($post['loginRec']);
-            $db->updateRec($user['login'], $post['idPost'], $post['numberRec']);
-
+        } else if ($this->post["post"] == "setRec") {
+            
+            $this->db->updateRec($this->post["idPost"], $this->post["rec1"], $this->post["rec2"], $this->post["rec3"]);
+            
             $params["message"] = "Recenzent byl přiřazen";
             return $params;
         }
@@ -332,18 +333,26 @@ class PostProcessor {
 
      /**
      * Metoda, obsluhující formuláře, související s recenzemi.
-     * 
-     * @param type $post
-     * @param type $db
-     * @param type $login
-     * @return array
+ 
+     * @return array obsahující výsledky zpracování: "message" => "zpráva o úspěchu", "error" => "zpráva o neúspěchu"
      */
-    private function doRec($post, $db, $login) {
+    private function doRec() {
         $params = array();
         //nová recenze
-        if ($post["rec"] == "newRec") {
-            $author = $login->getLogged();
-            $res = $db->addRec($author['name'], $post["content"], $post["lang"], $post["orig"], $post["summary"], $post["idPost"]);
+        if ($this->post["rec"] == "newRec") {
+            $author = $this->login->getLogged();
+            $published = $this->db->getRecs($this->post["idPost"]);
+            
+            if ($published != null) {
+                foreach ($published as $rec) {
+                    if ($rec['autor']==$author['name']) {
+                        $params["error"] = "Přidání recenze se nezdařilo";
+                        return $params;
+                    }
+                }
+            }
+            
+            $res = $this->db->addRec($author['name'], $this->post["content"], $this->post["lang"], $this->post["orig"], $this->post["summary"], $this->post["idPost"]);
 
             if ($res) {
                 $params["message"] = "Recenze byla publikována";
@@ -353,8 +362,8 @@ class PostProcessor {
             return $params;
 
             //smazat  
-        } else if ($post["rec"] == "delete") {
-            $res = $db->deleteRec($post["idRec"]);
+        } else if ($this->post["rec"] == "delete") {
+            $res = $this->db->deleteRec($this->post["idRec"]);
             if (!$res) {
                 $params["error"] = "Smazání recenze se nezdařilo";
             } else {
@@ -363,8 +372,8 @@ class PostProcessor {
             return $params;
 
             //edit       
-        } else if ($post["rec"] == "edit") {
-            $res = $db->editRec($post["idRec"], $post["content"], $post["summary"], $post["lang"], $post["orig"]);
+        } else if ($this->post["rec"] == "edit") {
+            $res = $this->db->editRec($this->post["idRec"], $this->post["content"], $this->post["summary"], $this->post["lang"], $this->post["orig"]);
             if ($res) {
                 $params["message"] = "Recenze byla upravena";
             } else {
@@ -377,16 +386,13 @@ class PostProcessor {
      /**
      * Metoda, obsluhující formuláře, související se soubory.
      * 
-     * @param type $post
-     * @param type $db
-     * @param type $login
-     * @return array
+     * @return array obsahující výsledky zpracování: "message" => "zpráva o úspěchu", "error" => "zpráva o neúspěchu"
      */
-    function doFile($post, $db, $login) {
+    function doFile() {
         $params = array();
         //smazat soubor   
-        if ($post["file"] == "delete") {
-            $res = $db->deleteFile($post['idPost']);
+        if ($this->post["file"] == "delete") {
+            $res = $this->db->deleteFile($this->post['idPost']);
             if ($res) {
                 $params["message"] = "Soubor byl odstraněn";
             } else {
@@ -395,15 +401,15 @@ class PostProcessor {
             return $params;
 
             //změnit ikonku        
-        } else if ($post["file"] == "icon") {
+        } else if ($this->post["file"] == "icon") {
             $target_dir = "img/";
             $fileName = basename($_FILES["file"]["name"]);
             $fileType = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
             $ok = 1;
 
             //povolí jen obrázky
-            if ($fileType != "png" && $fileType != "jpeg" && $fileType != "jpg" ) {
-                $params["error"] = "Špatný formát obrázku, povoleny: PNG, JPEG, JPG";
+            if ($fileType != "jpg" && $fileType != "png" && $fileType != "jpeg" && $fileType != "gif") {
+                $params["error"] = "Špatný formát obrázku, povoleny: PNG, JPEG, GIF";
                 $ok = 0;
             }
             if (getimagesize($_FILES["file"]["tmp_name"]) == false) {
@@ -420,12 +426,12 @@ class PostProcessor {
             //pokud lze nahrát
             if ($ok == 1) {
                 $date = getdate();
-                $author = $login->getLogged();
+                $author = $this->login->getLogged();
                 $fileName = $author["name"] . "_" . $date['yday'] . "-" . $date['year'] . "-" .
                         $date['seconds'] . "-" . $date['minutes'] . "-" . $date['hours'] . $fileType;
                 if (move_uploaded_file($_FILES["file"]["tmp_name"], $target_dir . $fileName)) {
 
-                    $res = $db->changeIcon($author["name"], $fileName);
+                    $res = $this->db->changeIcon($author["name"], $fileName);
                     if ($res) {
                         $params["message"] = "Obrázek byl nahrán";
                     } else {

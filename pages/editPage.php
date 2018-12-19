@@ -1,7 +1,14 @@
 <?php
+/**
+ * Stránka pro upravování příspěvků nebo recenzí. Přístupná pouze přihlášeným uživatelům.
+ * Jaký příspěvek či recenze se budou upravovat se zadává do $_GET
+ * Pokud je přihlášený uživatel autorem daného příspěvku/recenze a příspěvek/recenze se dají upravit, otevře se formulář s předvyplněnými hodnotami.
+ * Jinak se zobrazuje error message.
+ */
 
 echo '<div class="container-fluid">';
 
+//výpisy výsledku odeslání formuláře
 if (isset($params["error"])) {
     echo '<div class="alert alert-danger alert-dismissible">
                 <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
@@ -18,16 +25,21 @@ if (isset($params["message"])) {
 }
 
 
+//je přihlášen uživatel?
 if (isset($params['user'])) {
 
     //upravení recenze
-    if (isset($_GET['idr'])) {
+    if (isset($_GET['idr']) && filter_var($_GET['idr'], FILTER_VALIDATE_INT)) {
+        
         $rec = $params['db']->getOneRec($_GET["idr"]);
         if ($rec != null) {
-            if ($rec['autor'] == $params['user']['login']) {
+            $post = $params['db']->getPost($rec['prispevek']);
+            //je autorem?
+            if ($rec['autor'] == $user['login'] && (isset($post)) && ( ($post['schvaleny'] == 0) || ($post['schvaleny'] == -1) )) {
 
                 echo '<h4>Upravit recenzi:</h4>';
                 
+                //obsah textu
                   echo '<form class="form-horizontal" action="" method="POST">
                         <div class="form-group">
                             <label class="control-label col-sm-2" for="content">Obsah:</label>
@@ -36,7 +48,7 @@ if (isset($params['user'])) {
                             </div>
                         </div>';
 
-            //hodnocení originality      ¨
+                //hodnocení originality      ¨
                   echo  '<div class="form-group">
                             <label class="control-label col-sm-2" for="orig">Originalita</label>
                         ';
@@ -53,7 +65,7 @@ if (isset($params['user'])) {
                   }
                   echo '</div>';
                   
-            //hodnocení jazyka      
+                //hodnocení jazyka      
                   echo  '<div class="form-group">
                             <label class="control-label col-sm-2" for="lang">Jazyk</label>
                         ';
@@ -70,7 +82,7 @@ if (isset($params['user'])) {
                   }
                   echo '</div>';
 
-            //celkové hodnocení      
+                //celkové hodnocení      
                   echo  '<div class="form-group">
                             <label class="control-label col-sm-2" for="summary">Celkově</label>
                         ';
@@ -87,6 +99,7 @@ if (isset($params['user'])) {
                   }
                   echo '</div>';
                   
+                  //odeslání formuláře
                   echo '
                            <div class="form-group"> 
                         <div class="col-sm-offset-2 col-sm-9">
@@ -97,17 +110,18 @@ if (isset($params['user'])) {
                     </div>
                 </form>';  
             } else {
-                echo '<h2><span class="glyphicon glyphicon-remove"></span> Nedostatečné oprávnění</h2>';
+                echo '<h2><span class="glyphicon glyphicon-remove"></span> Přístup odepřen </h2>';
             }
         } else {
             echo '<h2><span class="glyphicon glyphicon-remove"></span> Nic k zobrazení </h2>';
         }
 
 //upravení příspěvku    
-    } else if (isset($_GET['idp'])) {
+    } else if (isset($_GET['idp']) && filter_var($_GET['idp'], FILTER_VALIDATE_INT)) {
         $post = $params['db']->getPost($_GET["idp"]);
         if ($post != null) {
-            if ( ($post['autor'] == $params['user']['login']) && ($post['schvaleny'] == 0 || $post['schvaleny'] == -1) ) {
+            //je uživatel autorem
+            if ( ($post['autor'] == $user['login']) && ($post['schvaleny'] == 0 || $post['schvaleny'] == -1) ) {
                 echo '<h4>Upravit příspěvek:</h4>';
                 
                 echo '<form class="form-horizontal" action="" method="POST" enctype="multipart/form-data">
@@ -143,7 +157,7 @@ if (isset($params['user'])) {
                 </form>';
                 
             } else {
-                echo '<h2><span class="glyphicon glyphicon-remove"></span> Nedostatečné oprávnění</h2>';
+                echo '<h2><span class="glyphicon glyphicon-remove"></span> Přístup odepřen </h2>';
             }
         } else {
             echo '<h2><span class="glyphicon glyphicon-remove"></span> Nic k zobrazení </h2>';
@@ -158,6 +172,3 @@ if (isset($params['user'])) {
 
 
 echo '</div>';
-
-
-//asi formulář předvyplněnej a na submit se dělá update

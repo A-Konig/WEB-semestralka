@@ -1,7 +1,19 @@
 <?php
 
+/**
+ * Stránka zobrazující vybraný příspěvek.
+ * Pokud je uživatel nepřihlášený, vidí jen text schválených článků a přiložený soubor.
+ * Přihlášený uživatel vidí i recenze pod článkem.
+ * Pokud je přihlášený uživatel adminem, vidí i neschválené příspěvkya jejich recenze a může je zamítnout či schválit.
+ * Pokud je přihlášeným uživatelem autor článku, vidí článek i pokud nebyl dosud schválen. Zároveň má následující možnosti:
+ *  článek smazat
+ *  článek editovat
+ * Pokud je přihlášeným uživatelem recenzent, kterému byl přiřazen článek k recenzi, má pod článkem možnost přidat recenzi.
+ * Pokud již recenzi napsal, může ji upravovat.
+ */
 echo '<div class="container-fluid">';
 
+//výpisy výsledku odeslání formuláře
 if (isset($params["error"])) {
     echo '<div class="alert alert-danger alert-dismissible">
                 <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
@@ -16,7 +28,8 @@ if (isset($params["error"])) {
     unset($params["message"]);
 }
 
-if (isset($_GET['id'])) {
+//výběr článku
+if (isset($_GET['id']) && filter_var($_GET['id'], FILTER_VALIDATE_INT)) {
     $post = $params['db']->getPost($_GET['id']);
 
     //existuje příspěvek k zobrazení
@@ -25,28 +38,45 @@ if (isset($_GET['id'])) {
 
         $recs = $params['db']->getRecs($_GET['id']);
 
-        //editování postu
-        if (($params['user']['login'] == $post['autor']) && ($post['schvaleny'] == 0)) {
+        //možnosti pro autora
+        if (($params['user']['login'] == $post['autor']) && ( ($post['schvaleny'] == 0) || ($post['schvaleny'] == -1))) {
+            //editování příspěvku
             echo '<a class="floatright btn controlBtn" href="/index.php?page=editPage&idp=' . $post['id'] . '">
                     <span class="glyphicon glyphicon-pencil"></span> Editovat</button>
                     </a>
                      ';
+            //smazání příspěvku
+            echo '
+                  <div class="floatright">
+                    <span class="glyphicon glyphicon-none"></span>
+                  </div>
+                  <div class="floatright">
+                  <form class="form-inline" action="" method="POST">
+                       <input type="hidden" name="post" value="delete">
+                       <input type="hidden" name="idPost" value="' . $post['id'] . '">
+                       <button type="submit" class="btn controlBtn" name="submit"> <span class="glyphicon glyphicon-trash"></span>Smazat</button>
+                  </form>
+                  </div>';
         }
 
         echo '<h3>' . $post['nazev'] . '</h3>';
         echo '<b>Autor: </b>' . $post['autor'] . '';
         echo '<div class="floatright">' . $post['datum'] . '</div>';
-        
-        $obsah = str_replace("\n","<br>",$post['obsah']);
-        
+
+        $obsah = str_replace("\n", "<br>", $post['obsah']);
+
         echo '<div class="text"><p>' . $obsah . '</p></div>';
-        
+
+        //odkaz na soubor
         if ($post['file'] != null) {
-            $file= 'files/'.$post['file'];
+            $file = 'files/' . $post['file'];
 
             if (file_exists($file)) {
-                echo '<b><a href="files/'.$post['file'].'"><span class="glyphicon glyphicon-file"></span>  Zobrazit přiložený soubor</a></b>';
-                if (($params['user']['login'] == $post['autor']) && ($post['schvaleny'] == 0)) {
+                echo '<br>';
+                echo '<b><a href="files/' . $post['file'] . '"><span class="glyphicon glyphicon-file"></span>  Zobrazit přiložený soubor</a></b>';
+
+                //pro autora možnost soubor smazat
+                if (($params['user']['login'] == $post['autor']) && ( ($post['schvaleny'] == 0) || ($post['schvaleny'] == -1))) {
                     echo '
                             <form class="form-inline" action="" method="POST">
                                 <input type="hidden" name="file" value="delete">
@@ -55,87 +85,89 @@ if (isset($_GET['id'])) {
                             </form>
                                ';
                 }
-                
-                
             }
         }
 
-        //hodnocení
-        if ($recs != null) {
-            echo '<hr class="breakpoint">';
-            echo '<h4>Recenze:</h4>';
+        //recenze
+        if ($params["user"] != null) {
+            if ($recs != null) {
+                echo '<hr class="breakpoint">';
+                echo '<h4>Recenze:</h4>';
 
-            foreach ($recs as $rec) {
-                echo '<div class="container-fluid">';
-                echo '<div class="well well-sm well-top">';
-                echo $rec['autor'];
+                foreach ($recs as $rec) {
+                    echo '<div class="container-fluid">';
+                    echo '<div class="well well-sm well-top">';
+                    if ($rec['aktualni'] == 0) {
+                        echo '<span class="label label-warning">Staré</span> <span class="glyphicon glyphicon-none"></span>';
+                    }
+                    echo $rec['autor'];
 
-                //pro admina - mazání recenze
-                if ($params["user"] != null) {
-                    //pro autora upravování
-                    if ($params["user"]["login"] == $rec['autor'] && $post['schvaleny'] == 0) {
-                        echo '<a class="floatright" href="/index.php?page=editPage&idr=' . $rec['id'] . '">
+
+                    if ($params["user"] != null) {
+                        //pro autora upravování
+                        if ($params["user"]["login"] == $rec['autor'] && $post['schvaleny'] == 0) {
+                            echo '<a class="floatright" href="/index.php?page=editPage&idr=' . $rec['id'] . '">
                         <span class="glyphicon glyphicon-pencil"></span></button>
                         </a>
                          ';
-                    }
+                        }
 
-                    //pro admina smazání
-                    if ($params["user"]["role"] == 1) {
-                        echo '
+                        //pro admina smazání
+                        if ($params["user"]["role"] == 1) {
+                            echo '
                             <form class="form-inline floatright" action="" method="POST">
                                 <input type="hidden" name="rec" value="delete">
                                 <input type="hidden" name="idRec" value="' . $rec['id'] . '">
                                 <button type="submit" class="linkButton" name="submit"> <span class="glyphicon glyphicon-trash"></span></button>
                             </form>
                             ';
+                        }
                     }
-                }
 
-                //celkové hodnocení
-                echo '<div class="floatright">';
-                for ($i = 0; $i < $rec['celkove']; $i++) {
-                    echo '<span class="glyphicon glyphicon-star"></span> ';
-                }
-                for ($l = 0; $l < (5 - $rec['celkove']); $l++) {
+                    //celkové hodnocení
+                    echo '<div class="floatright">';
+                    for ($i = 0; $i < $rec['celkove']; $i++) {
+                        echo '<span class="glyphicon glyphicon-star"></span> ';
+                    }
+                    for ($l = 0; $l < (5 - $rec['celkove']); $l++) {
                         echo '<span class="glyphicon glyphicon-star-empty"></span>';
-                }
-                echo '</div>';
+                    }
+                    echo '</div>';
 
-                echo '</div>';
-                echo '<div class="well well-bottom">';
+                    echo '</div>';
+                    echo '<div class="well well-bottom">';
 
-                //hodnocení jazyka
-                echo '<div class="floatright rightAlign">';
-                echo 'Jazyk: ';
-                for ($i = 0; $i < $rec['jazyk']; $i++) {
-                    echo '<span class="glyphicon glyphicon-star"></span>';
-                }
-                for ($l = 0; $l < (5 - $rec['jazyk']); $l++) {
+                    //hodnocení jazyka
+                    echo '<div class="floatright rightAlign">';
+                    echo 'Jazyk: ';
+                    for ($i = 0; $i < $rec['jazyk']; $i++) {
+                        echo '<span class="glyphicon glyphicon-star"></span>';
+                    }
+                    for ($l = 0; $l < (5 - $rec['jazyk']); $l++) {
                         echo '<span class="glyphicon glyphicon-star-empty"></span>';
-                }
-                echo '<br>';
-                
-                //hodnocení originality
-                echo 'Originalita:';
-                for ($i = 0; $i < $rec['originalita']; $i++) {
-                    echo '<span class="glyphicon glyphicon-star"></span>';
-                }
-                for ($l = 0; $l < (5 - $rec['originalita']); $l++) {
+                    }
+                    echo '<br>';
+
+                    //hodnocení originality
+                    echo 'Originalita:';
+                    for ($i = 0; $i < $rec['originalita']; $i++) {
+                        echo '<span class="glyphicon glyphicon-star"></span>';
+                    }
+                    for ($l = 0; $l < (5 - $rec['originalita']); $l++) {
                         echo '<span class="glyphicon glyphicon-star-empty"></span>';
+                    }
+                    echo '</div>';
+
+
+                    echo '<div>' . $rec['datum'] . '</div>';
+                    echo '<br>';
+                    $obsahR = str_replace("\n", "<br>", $rec['obsah']);
+
+                    echo $obsahR;
+                    echo '</div>';
+                    echo '</div>';
                 }
-                echo '</div>';
-                
-                
-                echo '<div>' . $rec['datum'] . '</div>';
-                echo '<br>';
-                echo $rec['obsah'];
-                echo '</div>';
-                echo '</div>';
             }
-        }
-
-        if ($params["user"] != null) {
 
             $isRew = 0;
             $allRecs = $params['db']->getRecs($post['id']);
@@ -147,7 +179,7 @@ if (isset($_GET['id'])) {
                 }
             }
 
-            //přidání nového
+            //přidání nové recenze
             if (($isRew == 0) && ( ($user["login"] == $post["rec1"]) || ($user["login"] == $post["rec2"]) || ($user["login"] == $post["rec3"]) )) {
                 echo '<br>';
                 echo '<h4>Přidat recenzi:</h4>';
@@ -210,9 +242,13 @@ if (isset($_GET['id'])) {
                     </form>';
             }
 
+            //pro admina
             if (($params["user"]["role"] == 1)) {
-                //mazání příspěvku
-                echo '
+
+                if ($post['schvaleny'] == 0) {
+
+                    //odmítnutí příspěvku
+                    echo '
                             <form class="form-inline floatright" action="" method="POST">
                                 <input type="hidden" name="post" value="deny">
                                 <input type="hidden" name="idPost" value="' . $post['id'] . '">
@@ -221,18 +257,23 @@ if (isset($_GET['id'])) {
                               ';
 
 
-                if ($post['schvaleny'] == 0) {
-
                     echo '<div class="floatright extendLink"></div>';
 
-                    //schválení příspěvku
-                    echo '
-                                <form class="form-inline floatright" action="" method="POST">
-                                    <input type="hidden" name="post" value="publish">
-                                    <input type="hidden" name="idPost" value="' . $post['id'] . '">
-                                    <button type="submit" class="btn controlBtn" name="submit"> <span class="glyphicon glyphicon-ok"></span></button>
-                                </form>
+                    //schválení příspěvku, pokud je splněna podmínka 3 recenzí
+                    $recsPost = $params['db']->getRecs($_GET['id']);
+                    if (isset($recsPost)) {
+                        $num = count($recsPost);
+                    }
+
+                    if ($num >= 3) {
+                        echo '
+                            <form class="form-inline floatright" action="" method="POST">
+                                <input type="hidden" name="post" value="publish">
+                                <input type="hidden" name="idPost" value="' . $post['id'] . '">
+                                <button type="submit" class="btn controlBtn" name="submit"> <span class="glyphicon glyphicon-ok"></span></button>
+                            </form>
                              ';
+                    }
                 }
             }
         }
@@ -240,12 +281,12 @@ if (isset($_GET['id'])) {
 
         //neexistuje příspěvek k zobrazeníí    
     } else {
-        echo 'Nothing to see here.';
+        echo '<h2><span class="glyphicon glyphicon-remove"></span> Nic k zobrazení</h2>';
     }
 
 //není zadán příspěvek k zobrazení    
 } else {
-    echo 'Nothing to see here.';
+    echo '<h2><span class="glyphicon glyphicon-remove"></span> Nic k zobrazení</h2>';
 }
 
 echo '</div>';
