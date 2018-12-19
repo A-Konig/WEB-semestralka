@@ -295,18 +295,19 @@ class PostProcessor {
             //smazat příspěvek
         } else if ($this->post["post"] == "delete") {
 
+            $recs = $this->db->getRecs($this->post["idPost"]);
+            if ($recs != null) {
+                foreach ($recs as $rec) {
+                    $this->db->deleteRec($rec['id']);
+                }
+            }
+            
             $res = $this->db->deletePost($this->post["idPost"]);
             if (!$res) {
                 $params["error"] = "Smazání příspěvku se nezdařilo";
             } else {
                 $params["message"] = "Příspěvek byl smazán";
             
-                $recs = $this->db->getRecs($this->post["idPost"]);
-                if ($recs != null) {
-                    foreach ($recs as $rec) {
-                        $this->db->deleteRec($rec['id']);
-                    }
-                }
             }
             return $params;
 

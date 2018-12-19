@@ -329,7 +329,7 @@ class Database extends baseModel {
         $table_name = "prispevky";
         $where_array = array();
         $order_by = array();
-        $order_by[] = array("column" => "datum", "sort" => "ASC");
+        $order_by[] = array("column" => "datum", "sort" => "DESC");
 
         $res = $this->DBSelectAll($table_name, "*", $where_array, $order_by);
         return $res;
@@ -591,7 +591,21 @@ class Database extends baseModel {
      */
     public function updateRec($idPost, $rec1, $rec2, $rec3) {
         $table_name = "prispevky";
-        $toUpdate = array("rec1" => "'$rec1'", "rec2" => "'$rec2'", "rec3" => "'$rec3'");
+        
+        $r1 = "'".$rec1."'";
+        if ($rec1 == null) {
+            $r1 = "NULL";
+        }
+        $r2 = "'".$rec2."'";
+        if ($rec2 == null) {
+            $r2 = "NULL";
+        }
+        $r3 = "'".$rec3."'";
+        if ($rec3 == null) {
+            $r3 = "NULL";
+        }
+        
+        $toUpdate = array("rec1" => "$r1", "rec2" => "$r2", "rec3" => "$r3");
         $where_array = array();
         $where_array[] = array("column" => "id", "symbol" => "=", "value" => $idPost);
 
